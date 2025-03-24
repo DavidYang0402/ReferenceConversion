@@ -1,0 +1,9 @@
+{
+    "whitelist": [
+        { "name": "ShareFunc", "version": "4.0.0.0" },
+        { "name": "ShareFunc.Base", "version": "1.0.0.0" },
+        { "name": "ShareWebCtrl", "version": "1.0.0.0" },
+        { "name": "ExcelHelper.Report", "version": "1.0.0.0" },
+        { "name": "WordHelper.Report", "version": "1.0.0.0" }
+    ]
+}
