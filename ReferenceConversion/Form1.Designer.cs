@@ -50,7 +50,7 @@
             // 
             Tb_ShowPath.Location = new Point(135, 31);
             Tb_ShowPath.Name = "Tb_ShowPath";
-            Tb_ShowPath.Size = new Size(384, 23);
+            Tb_ShowPath.Size = new Size(433, 23);
             Tb_ShowPath.TabIndex = 1;
             // 
             // Lb_ShowAllCsproj
@@ -60,19 +60,19 @@
             Lb_ShowAllCsproj.ItemHeight = 15;
             Lb_ShowAllCsproj.Location = new Point(44, 80);
             Lb_ShowAllCsproj.Name = "Lb_ShowAllCsproj";
-            Lb_ShowAllCsproj.Size = new Size(475, 184);
+            Lb_ShowAllCsproj.Size = new Size(524, 214);
             Lb_ShowAllCsproj.TabIndex = 2;
             // 
             // Tb_SaveFolder
             // 
-            Tb_SaveFolder.Location = new Point(213, 270);
+            Tb_SaveFolder.Location = new Point(219, 305);
             Tb_SaveFolder.Name = "Tb_SaveFolder";
-            Tb_SaveFolder.Size = new Size(306, 23);
+            Tb_SaveFolder.Size = new Size(349, 23);
             Tb_SaveFolder.TabIndex = 3;
             // 
             // Btn_Convert
             // 
-            Btn_Convert.Location = new Point(241, 334);
+            Btn_Convert.Location = new Point(273, 334);
             Btn_Convert.Name = "Btn_Convert";
             Btn_Convert.Size = new Size(75, 23);
             Btn_Convert.TabIndex = 4;
@@ -83,7 +83,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(44, 273);
+            label1.Location = new Point(49, 313);
             label1.Name = "label1";
             label1.Size = new Size(169, 15);
             label1.TabIndex = 5;
@@ -93,14 +93,17 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(561, 369);
+            ClientSize = new Size(619, 392);
             Controls.Add(label1);
             Controls.Add(Btn_Convert);
             Controls.Add(Tb_SaveFolder);
             Controls.Add(Lb_ShowAllCsproj);
             Controls.Add(Tb_ShowPath);
             Controls.Add(Btn_GetFolder);
+            MaximumSize = new Size(900, 600);
+            MinimumSize = new Size(635, 431);
             Name = "Form1";
+            Padding = new Padding(5);
             Text = "Reference Convert";
             ResumeLayout(false);
             PerformLayout();
