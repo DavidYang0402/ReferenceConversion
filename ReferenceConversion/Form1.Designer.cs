@@ -33,7 +33,7 @@
             Lb_ShowAllCsproj = new ListBox();
             Tb_SaveFolder = new TextBox();
             Btn_Convert = new Button();
-            Lb_ShowFileReference = new ListBox();
+            label1 = new Label();
             SuspendLayout();
             // 
             // Btn_GetFolder
@@ -50,7 +50,7 @@
             // 
             Tb_ShowPath.Location = new Point(135, 31);
             Tb_ShowPath.Name = "Tb_ShowPath";
-            Tb_ShowPath.Size = new Size(485, 23);
+            Tb_ShowPath.Size = new Size(384, 23);
             Tb_ShowPath.TabIndex = 1;
             // 
             // Lb_ShowAllCsproj
@@ -60,20 +60,19 @@
             Lb_ShowAllCsproj.ItemHeight = 15;
             Lb_ShowAllCsproj.Location = new Point(44, 80);
             Lb_ShowAllCsproj.Name = "Lb_ShowAllCsproj";
-            Lb_ShowAllCsproj.Size = new Size(239, 184);
+            Lb_ShowAllCsproj.Size = new Size(475, 184);
             Lb_ShowAllCsproj.TabIndex = 2;
-            Lb_ShowAllCsproj.SelectedIndexChanged += Lb_ShowAllCsproj_SelectedIndexChanged;
             // 
             // Tb_SaveFolder
             // 
-            Tb_SaveFolder.Location = new Point(168, 270);
+            Tb_SaveFolder.Location = new Point(213, 270);
             Tb_SaveFolder.Name = "Tb_SaveFolder";
-            Tb_SaveFolder.Size = new Size(336, 23);
+            Tb_SaveFolder.Size = new Size(306, 23);
             Tb_SaveFolder.TabIndex = 3;
             // 
             // Btn_Convert
             // 
-            Btn_Convert.Location = new Point(304, 312);
+            Btn_Convert.Location = new Point(241, 334);
             Btn_Convert.Name = "Btn_Convert";
             Btn_Convert.Size = new Size(75, 23);
             Btn_Convert.TabIndex = 4;
@@ -81,21 +80,21 @@
             Btn_Convert.UseVisualStyleBackColor = true;
             Btn_Convert.Click += Btn_Convert_Click;
             // 
-            // Lb_ShowFileReference
+            // label1
             // 
-            Lb_ShowFileReference.FormattingEnabled = true;
-            Lb_ShowFileReference.ItemHeight = 15;
-            Lb_ShowFileReference.Location = new Point(304, 80);
-            Lb_ShowFileReference.Name = "Lb_ShowFileReference";
-            Lb_ShowFileReference.Size = new Size(336, 184);
-            Lb_ShowFileReference.TabIndex = 5;
+            label1.AutoSize = true;
+            label1.Location = new Point(44, 273);
+            label1.Name = "label1";
+            label1.Size = new Size(169, 15);
+            label1.TabIndex = 5;
+            label1.Text = "Project Reference 指定資料夾";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(822, 455);
-            Controls.Add(Lb_ShowFileReference);
+            ClientSize = new Size(561, 369);
+            Controls.Add(label1);
             Controls.Add(Btn_Convert);
             Controls.Add(Tb_SaveFolder);
             Controls.Add(Lb_ShowAllCsproj);
@@ -114,6 +113,6 @@
         private ListBox Lb_ShowAllCsproj;
         private TextBox Tb_SaveFolder;
         private Button Btn_Convert;
-        private ListBox Lb_ShowFileReference;
+        private Label label1;
     }
 }

@@ -12,7 +12,7 @@ namespace ReferenceConversion
         {
             InitializeComponent();
         }
-
+        //Get Folder
         private void Btn_GetFolder_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
@@ -34,6 +34,7 @@ namespace ReferenceConversion
                 }
             }
         }
+        //Load Csproj Files
         private void LoadCsprojFiles(string folderPath)
         {
             if (Directory.Exists(folderPath))
@@ -63,11 +64,8 @@ namespace ReferenceConversion
             }
         }
 
-        private void Lb_ShowAllCsproj_SelectedIndexChanged(object sender, EventArgs e)
-        {
 
-        }
-
+        //Reference Conversion
         private void Btn_Convert_Click(object sender, EventArgs e)
         {
             string folderPath = Tb_ShowPath.Text;
@@ -93,10 +91,9 @@ namespace ReferenceConversion
 
             MessageBox.Show("轉換完成。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-
+        //Process Csproj File
         private void ProcessCsprojFile(string csprojfile)
         {
-
             try
             {
                 XmlDocument xmlDoc = new XmlDocument();
@@ -107,62 +104,19 @@ namespace ReferenceConversion
                 // 清理 ToolsVersion 和 Sdk 屬性
                 CleanToolsVersionAndSdk(xmlDoc);
 
-                // 轉換 ProjectReference 為 Reference
-                XmlNodeList projectReferences = xmlDoc.GetElementsByTagName("ProjectReference");
-                XmlNodeList references = xmlDoc.GetElementsByTagName("Reference");
+                // 使用 HashSet 追蹤已處理過的項目
+                HashSet<string> processedReferences = new HashSet<string>();
 
-                // 收集需要刪除的 ProjectReference 節點
-                List<XmlNode> nodesToRemove = new List<XmlNode>();
+                // 轉換 ProjectReference → Reference
+                isChanged |= ConvertProjectReferenceToReference(xmlDoc, processedReferences);
 
-                if (projectReferences.Count > 0)
-                {
-                    foreach (XmlNode node in projectReferences)
-                    {
-                        string referenceName = Path.GetFileNameWithoutExtension(node.Attributes["Include"].Value);
-                        Console.WriteLine($"處理 ProjectReference: {referenceName}");
+                // 轉換 Reference → ProjectReference
+                isChanged |= ConvertReferenceToProjectReference(xmlDoc, processedReferences);
 
-                        // 檢查白名單中是否有該參考名稱
-                        if (IsInAllowlist(referenceName, out string version))
-                        {
-                            // 創建 Reference 節點，並設置版本
-                            XmlElement reference = xmlDoc.CreateElement("Reference");
-                            reference.SetAttribute("Include", $"{referenceName}, Version={version}, Culture=neutral, processorArchitecture=MSIL");
-
-                            XmlElement specificVersion = xmlDoc.CreateElement("SpecificVersion");
-                            specificVersion.InnerText = "False";
-                            reference.AppendChild(specificVersion);
-
-                            XmlElement hintPath = xmlDoc.CreateElement("HintPath");
-                            string hintPathValue = Path.Combine("App_Data", $"{referenceName}.dll");
-                            hintPath.InnerText = hintPathValue;
-                            reference.AppendChild(hintPath);
-
-                            // 把新創建的 Reference 節點加到父節點
-                            node.ParentNode.AppendChild(reference);
-                            nodesToRemove.Add(node);  // 記錄需要刪除的 ProjectReference 節點
-                            isChanged = true;
-                        }
-                    }
-
-                    // 刪除收集到的 ProjectReference 節點
-                    foreach (XmlNode node in nodesToRemove)
-                    {
-                        node.ParentNode.RemoveChild(node);
-                    }
-                }
-
+                // 儲存變更
                 if (isChanged)
                 {
-                    try
-                    {
-                        // 保存轉換後的 .csproj 檔案
-                        xmlDoc.Save(csprojfile);
-                        Console.WriteLine($"檔案已保存: {csprojfile}");
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"保存檔案時出現錯誤: {ex.Message}", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    xmlDoc.Save(csprojfile);
                 }
             }
             catch (Exception ex)
@@ -170,37 +124,117 @@ namespace ReferenceConversion
                 MessageBox.Show($"處理檔案時出現錯誤: {ex.Message}", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        private bool IsInAllowlist(string referenceName, out string version)
+        // Convert ProjectReference to Reference
+        private bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processedReferences)
         {
-            version = string.Empty;
-            string projectRoot = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
-            string allowlistPath = Path.Combine(projectRoot, "Data", "AllowList.json");
+            bool isChanged = false;
+            XmlNodeList projectReferences = xmlDoc.GetElementsByTagName("ProjectReference");
+            List<XmlNode> nodesToRemove = new List<XmlNode>();
 
-            Console.WriteLine($"AllowList.json 路徑: {allowlistPath}");
-
-            if (!File.Exists(allowlistPath))
+            if (projectReferences.Count > 0)
             {
-                throw new FileNotFoundException($"找不到 AllowList.json，請確認路徑是否正確: {allowlistPath}");
-            }
-
-            string json = File.ReadAllText(allowlistPath);
-            dynamic allowlist = JsonConvert.DeserializeObject(json);
-
-            // 只檢查 name 是否在白名單中，並回傳對應的 version
-            foreach (var item in allowlist.whitelist)
-            {
-                if (item.name == referenceName)
+                foreach (XmlNode node in projectReferences)
                 {
-                    version = item.version;
-                    return true;
+                    string referenceName = Path.GetFileNameWithoutExtension(node.Attributes["Include"].Value);
+
+                    // 若已處理過此項目則跳過
+                    if (processedReferences.Contains(referenceName)) continue;
+
+                    if (WhitelistManager.IsInAllowlist(referenceName, out string version, out string guid))
+                    {
+                        XmlElement reference = xmlDoc.CreateElement("Reference");
+                        reference.SetAttribute("Include", $"{referenceName}, Version={version}, Culture=neutral, processorArchitecture=MSIL");
+
+                        XmlElement specificVersion = xmlDoc.CreateElement("SpecificVersion");
+                        specificVersion.InnerText = "False";
+                        reference.AppendChild(specificVersion);
+
+                        XmlElement hintPath = xmlDoc.CreateElement("HintPath");
+                        hintPath.InnerText = Path.Combine("App_Data", $"{referenceName}.dll");
+                        reference.AppendChild(hintPath);
+
+                        node.ParentNode.AppendChild(reference);
+                        nodesToRemove.Add(node);
+                        processedReferences.Add(referenceName);  // 標記為已處理
+                        isChanged = true;
+                    }
                 }
             }
 
-            // 如果白名單中沒有找到對應名稱，返回 false
-            return false;
-        }
+            // 刪除 ProjectReference 節點
+            foreach (XmlNode node in nodesToRemove)
+            {
+                node.ParentNode.RemoveChild(node);
+            }
 
+            return isChanged;
+        }
+        // Convert Reference to ProjectReference
+        private bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processedReferences)
+        {
+            bool isChanged = false;
+            XmlNodeList references = xmlDoc.GetElementsByTagName("Reference");
+            List<XmlNode> nodesToRemove = new List<XmlNode>();
+
+            if (references.Count > 0)
+            {
+                foreach (XmlNode node in references)
+                {
+                    string referenceAttr = node.Attributes["Include"]?.Value;
+                    if (string.IsNullOrEmpty(referenceAttr)) continue;
+
+                    string referenceName = referenceAttr.Split(',')[0];
+
+                    // 若已處理過此項目則跳過
+                    if (processedReferences.Contains(referenceName)) continue;
+
+                    if (WhitelistManager.IsInAllowlist(referenceName, out _, out string projectGuid))
+                    {
+                        string baseFolder = Tb_SaveFolder.Text.Trim();
+                        if (string.IsNullOrEmpty(baseFolder))
+                        {
+                            MessageBox.Show("請輸入專案基底資料夾，例如 SysTools");
+                            return false;
+                        }
+
+                        //string relativePath = $@"..\..\..\{baseFolder}\{referenceName}\{referenceName}.csproj";
+                        // 計算新的 Include 屬性
+                        string relativePath = Path.Combine("..", "..", "..", baseFolder, referenceName, $"{referenceName}.csproj");
+
+                        // 檢查路徑是否包含 "Share"，如果包含則修改為 ShareFunc 子資料夾
+                        if (relativePath.Contains("Share"))
+                        {
+                            relativePath = Path.Combine("..", "..", "..", baseFolder, "ShareFunc\\ShareFunc\\", referenceName, $"{referenceName}.csproj");
+                        }
+
+                        XmlElement projectReference = xmlDoc.CreateElement("ProjectReference");
+                        projectReference.SetAttribute("Include", relativePath);
+
+                        XmlElement projectGuidElement = xmlDoc.CreateElement("Project");
+                        projectGuidElement.InnerText = projectGuid;
+                        projectReference.AppendChild(projectGuidElement);
+
+                        XmlElement nameElement = xmlDoc.CreateElement("Name");
+                        nameElement.InnerText = referenceName;
+                        projectReference.AppendChild(nameElement);
+
+                        node.ParentNode.AppendChild(projectReference);
+                        nodesToRemove.Add(node);
+                        processedReferences.Add(referenceName);  // 標記為已處理
+                        isChanged = true;
+                    }
+                }
+            }
+
+            // 刪除 Reference 節點
+            foreach (XmlNode node in nodesToRemove)
+            {
+                node.ParentNode.RemoveChild(node);
+            }
+
+            return isChanged;
+        }  
+        //Clean ToolsVersion and Sdk
         private void CleanToolsVersionAndSdk(XmlDocument xmlDoc)
         {
             // 移除 ToolsVersion 屬性
@@ -216,21 +250,6 @@ namespace ReferenceConversion
             {
                 sdkAttribute.OwnerElement.Attributes.Remove(sdkAttribute);
             }
-        }
-
-        private string FindCsprojFile(string baseDir, string referenceName)
-        {
-            string[] csprojFiles = Directory.GetFiles(baseDir, "*.csproj", SearchOption.AllDirectories);
-
-            foreach (string csproj in csprojFiles)
-            {
-                if (Path.GetFileNameWithoutExtension(csproj) == referenceName)
-                {
-                    return csproj;
-                }
-            }
-
-            return null;
         }
     }
 }
