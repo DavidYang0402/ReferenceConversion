@@ -84,15 +84,31 @@ namespace ReferenceConversion
                 return;
             }
 
-            foreach(string csprojfile in csprojFiles)
+            string baseFolder = Tb_SaveFolder.Text.Trim();
+            if (string.IsNullOrEmpty(baseFolder))
             {
-                ProcessCsprojFile(csprojfile);
+                MessageBox.Show("請輸入專案基底資料夾，例如 SysTools", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
 
-            MessageBox.Show("轉換完成。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            bool hasChanges = false;
+
+            foreach(string csprojfile in csprojFiles)
+            {
+                ProcessCsprojFile(csprojfile, ref hasChanges);
+            }
+
+            if (hasChanges)
+            {
+                MessageBox.Show("轉換完成。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("沒有檔案需要轉換。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
         //Process Csproj File
-        private void ProcessCsprojFile(string csprojfile)
+        private void ProcessCsprojFile(string csprojfile, ref bool hasChanges)
         {
             try
             {
@@ -117,6 +133,7 @@ namespace ReferenceConversion
                 if (isChanged)
                 {
                     xmlDoc.Save(csprojfile);
+                    hasChanges = true;
                 }
             }
             catch (Exception ex)
@@ -191,13 +208,13 @@ namespace ReferenceConversion
                     if (WhitelistManager.IsInAllowlist(referenceName, out _, out string projectGuid))
                     {
                         string baseFolder = Tb_SaveFolder.Text.Trim();
+                        //如果 baseFolder 是空的，顯示錯誤訊息並結束方法
                         if (string.IsNullOrEmpty(baseFolder))
                         {
-                            MessageBox.Show("請輸入專案基底資料夾，例如 SysTools");
-                            return false;
+                            MessageBox.Show("請輸入專案基底資料夾，例如 SysTools", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return false; // 返回 false，停止後續操作
                         }
 
-                        //string relativePath = $@"..\..\..\{baseFolder}\{referenceName}\{referenceName}.csproj";
                         // 計算新的 Include 屬性
                         string relativePath = Path.Combine("..", "..", "..", baseFolder, referenceName, $"{referenceName}.csproj");
 
