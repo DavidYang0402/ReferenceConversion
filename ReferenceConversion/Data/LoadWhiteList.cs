@@ -39,15 +39,26 @@ namespace ReferenceConversion
 
         private static List<WhitelistEntry> LoadWhitelist()
         {
-            string projectRoot = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
-            string allowlistPath = Path.Combine(projectRoot, "Data", "AllowList.json");
+            //string projectRoot = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
+            //string allowlistPath = Path.Combine(projectRoot, "Data", "AllowList.json");
+
+            // 取得應用程式根目錄 (發佈後的位置)
+            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            // 構建 Data 資料夾中的 AllowList.json 路徑
+            string allowlistPath = Path.Combine(appDirectory, "Data", "AllowList.json");
 
             try
             {
                 if (File.Exists(allowlistPath))
                 {
                     // 讀取 JSON 檔案
-                    string json = File.ReadAllText(allowlistPath);
+                    string json;
+                    using (var reader = new StreamReader(allowlistPath))
+                    {
+                        json = reader.ReadToEnd();
+                    }
+
                     var whitelist = JsonConvert.DeserializeObject<List<WhitelistEntry>>(json);
                     return whitelist ?? new List<WhitelistEntry>();
                 }
