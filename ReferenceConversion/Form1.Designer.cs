@@ -34,6 +34,10 @@
             Tb_SaveFolder = new TextBox();
             Btn_Convert = new Button();
             label1 = new Label();
+            groupBox1 = new GroupBox();
+            Lb_Allowlist = new ListBox();
+            Cbx_Project_Allowlist = new ComboBox();
+            groupBox1.SuspendLayout();
             SuspendLayout();
             // 
             // Btn_GetFolder
@@ -58,21 +62,21 @@
             Lb_ShowAllCsproj.FormattingEnabled = true;
             Lb_ShowAllCsproj.HorizontalScrollbar = true;
             Lb_ShowAllCsproj.ItemHeight = 15;
-            Lb_ShowAllCsproj.Location = new Point(44, 80);
+            Lb_ShowAllCsproj.Location = new Point(325, 91);
             Lb_ShowAllCsproj.Name = "Lb_ShowAllCsproj";
             Lb_ShowAllCsproj.Size = new Size(524, 214);
             Lb_ShowAllCsproj.TabIndex = 2;
             // 
             // Tb_SaveFolder
             // 
-            Tb_SaveFolder.Location = new Point(219, 305);
+            Tb_SaveFolder.Location = new Point(500, 316);
             Tb_SaveFolder.Name = "Tb_SaveFolder";
             Tb_SaveFolder.Size = new Size(349, 23);
             Tb_SaveFolder.TabIndex = 3;
             // 
             // Btn_Convert
             // 
-            Btn_Convert.Location = new Point(273, 334);
+            Btn_Convert.Location = new Point(357, 350);
             Btn_Convert.Name = "Btn_Convert";
             Btn_Convert.Size = new Size(75, 23);
             Btn_Convert.TabIndex = 4;
@@ -83,17 +87,48 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(49, 313);
+            label1.Location = new Point(330, 324);
             label1.Name = "label1";
             label1.Size = new Size(169, 15);
             label1.TabIndex = 5;
             label1.Text = "Project Reference 指定資料夾";
             // 
+            // groupBox1
+            // 
+            groupBox1.Controls.Add(Lb_Allowlist);
+            groupBox1.Controls.Add(Cbx_Project_Allowlist);
+            groupBox1.Location = new Point(44, 72);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(275, 254);
+            groupBox1.TabIndex = 6;
+            groupBox1.TabStop = false;
+            groupBox1.Text = "專案 白名單";
+            // 
+            // Lb_Allowlist
+            // 
+            Lb_Allowlist.FormattingEnabled = true;
+            Lb_Allowlist.ItemHeight = 15;
+            Lb_Allowlist.Location = new Point(6, 51);
+            Lb_Allowlist.Name = "Lb_Allowlist";
+            Lb_Allowlist.Size = new Size(263, 199);
+            Lb_Allowlist.TabIndex = 8;
+            // 
+            // Cbx_Project_Allowlist
+            // 
+            Cbx_Project_Allowlist.FormattingEnabled = true;
+            Cbx_Project_Allowlist.Location = new Point(6, 19);
+            Cbx_Project_Allowlist.Name = "Cbx_Project_Allowlist";
+            Cbx_Project_Allowlist.Size = new Size(263, 23);
+            Cbx_Project_Allowlist.TabIndex = 7;
+            Cbx_Project_Allowlist.Text = "請選取白名單專案";
+            Cbx_Project_Allowlist.SelectedIndexChanged += Cbx_Project_Allowlist_SelectedIndexChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(619, 392);
+            ClientSize = new Size(884, 392);
+            Controls.Add(groupBox1);
             Controls.Add(label1);
             Controls.Add(Btn_Convert);
             Controls.Add(Tb_SaveFolder);
@@ -105,6 +140,8 @@
             Name = "Form1";
             Padding = new Padding(5);
             Text = "Reference Convert";
+            Load += Form1_Load;
+            groupBox1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -117,5 +154,8 @@
         private TextBox Tb_SaveFolder;
         private Button Btn_Convert;
         private Label label1;
+        private GroupBox groupBox1;
+        private ListBox Lb_Allowlist;
+        private ComboBox Cbx_Project_Allowlist;
     }
 }

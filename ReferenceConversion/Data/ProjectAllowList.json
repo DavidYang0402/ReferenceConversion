@@ -1,0 +1,66 @@
+{
+  "projects": [
+    {
+      "projectname": "CDCVGBCE",
+      "projectguid": "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+      "Allowlist": [
+        {
+          "name": "ShareFunc",
+          "version": "4.0.0.0",
+          "guid": "{47f55d99-cfb5-4f67-93a2-38bf9f3dfc06}"
+        },
+        {
+          "name": "ShareFunc.Base",
+          "version": "1.0.0.0",
+          "guid": "{7d91dca0-a123-404e-92b9-13b22383fcea}"
+        },
+        {
+          "name": "ShareWebCtrl",
+          "version": "1.0.0.0",
+          "guid": "{dc91cf90-0c17-4729-b2d8-405c08e9d8db}"
+        },
+        {
+          "name": "ExcelHelper.Report",
+          "version": "1.0.0.0",
+          "guid": "{fdd603b6-8b8e-4a51-bd21-4952cac67813}"
+        },
+        {
+          "name": "WordHelper.Report",
+          "version": "1.0.0.0",
+          "guid": "{e2f7a933-9aec-4a16-b27a-d4c3f3c1601c}"
+        }
+      ]
+    },
+    {
+      "projectname": "For Testing Only CDCVGBCE",
+      "projectguid": "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBD}",
+      "Allowlist": [
+        {
+          "name": "ShareFunc2",
+          "version": "4.0.0.0",
+          "guid": "{47f55d99-cfb5-4f67-93a2-38bf9f3dfc07}"
+        },
+        {
+          "name": "ShareFunc2.Base",
+          "version": "5.0.0.0",
+          "guid": "{7d91dca0-a123-404e-92b9-13b22383fceb}"
+        },
+        {
+          "name": "ShareWebCtrl2",
+          "version": "1.0.0.0",
+          "guid": "{dc91cf90-0c17-4729-b2d8-405c08e9d8dc}"
+        },
+        {
+          "name": "ExcelHelper2.Report",
+          "version": "1.0.0.0",
+          "guid": "{fdd603b6-8b8e-4a51-bd21-4952cac67814}"
+        },
+        {
+          "name": "WordHelper2.Report",
+          "version": "1.0.0.0",
+          "guid": "{e2f7a933-9aec-4a16-b27a-d4c3f3c1601d}"
+        }
+      ]
+    }
+  ]
+}

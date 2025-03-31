@@ -39,8 +39,6 @@ namespace ReferenceConversion
 
         private static List<WhitelistEntry> LoadWhitelist()
         {
-            //string projectRoot = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.FullName;
-            //string allowlistPath = Path.Combine(projectRoot, "Data", "AllowList.json");
 
             // 取得應用程式根目錄 (發佈後的位置)
             string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
