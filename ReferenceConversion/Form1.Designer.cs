@@ -32,19 +32,20 @@
             Tb_ShowPath = new TextBox();
             Lb_ShowAllCsproj = new ListBox();
             Tb_SaveFolder = new TextBox();
-            Btn_Convert = new Button();
             label1 = new Label();
             groupBox1 = new GroupBox();
             Lb_Allowlist = new ListBox();
             Cbx_Project_Allowlist = new ComboBox();
             groupBox2 = new GroupBox();
+            Btn_ToReference = new Button();
+            Btn_ToProjectReference = new Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             SuspendLayout();
             // 
             // Btn_GetFolder
             // 
-            Btn_GetFolder.Location = new Point(44, 27);
+            Btn_GetFolder.Location = new Point(19, 21);
             Btn_GetFolder.Name = "Btn_GetFolder";
             Btn_GetFolder.Size = new Size(85, 29);
             Btn_GetFolder.TabIndex = 0;
@@ -54,7 +55,7 @@
             // 
             // Tb_ShowPath
             // 
-            Tb_ShowPath.Location = new Point(135, 31);
+            Tb_ShowPath.Location = new Point(110, 25);
             Tb_ShowPath.Name = "Tb_ShowPath";
             Tb_ShowPath.Size = new Size(433, 23);
             Tb_ShowPath.TabIndex = 1;
@@ -76,16 +77,6 @@
             Tb_SaveFolder.Size = new Size(349, 23);
             Tb_SaveFolder.TabIndex = 3;
             // 
-            // Btn_Convert
-            // 
-            Btn_Convert.Location = new Point(344, 357);
-            Btn_Convert.Name = "Btn_Convert";
-            Btn_Convert.Size = new Size(70, 25);
-            Btn_Convert.TabIndex = 4;
-            Btn_Convert.Text = "Convert";
-            Btn_Convert.UseVisualStyleBackColor = true;
-            Btn_Convert.Click += Btn_Convert_Click;
-            // 
             // label1
             // 
             label1.AutoSize = true;
@@ -99,7 +90,7 @@
             // 
             groupBox1.Controls.Add(Lb_Allowlist);
             groupBox1.Controls.Add(Cbx_Project_Allowlist);
-            groupBox1.Location = new Point(44, 72);
+            groupBox1.Location = new Point(19, 66);
             groupBox1.Name = "groupBox1";
             groupBox1.Padding = new Padding(5);
             groupBox1.Size = new Size(275, 279);
@@ -131,7 +122,7 @@
             groupBox2.Controls.Add(Lb_ShowAllCsproj);
             groupBox2.Controls.Add(label1);
             groupBox2.Controls.Add(Tb_SaveFolder);
-            groupBox2.Location = new Point(344, 72);
+            groupBox2.Location = new Point(319, 66);
             groupBox2.Name = "groupBox2";
             groupBox2.Padding = new Padding(5);
             groupBox2.Size = new Size(538, 279);
@@ -139,14 +130,35 @@
             groupBox2.TabStop = false;
             groupBox2.Text = "目前所有 csproj 檔案";
             // 
+            // Btn_ToReference
+            // 
+            Btn_ToReference.Location = new Point(319, 351);
+            Btn_ToReference.Name = "Btn_ToReference";
+            Btn_ToReference.Size = new Size(97, 30);
+            Btn_ToReference.TabIndex = 8;
+            Btn_ToReference.Text = "轉成參考";
+            Btn_ToReference.UseVisualStyleBackColor = true;
+            Btn_ToReference.Click += Btn_ToReference_Click;
+            // 
+            // Btn_ToProjectReference
+            // 
+            Btn_ToProjectReference.Location = new Point(422, 351);
+            Btn_ToProjectReference.Name = "Btn_ToProjectReference";
+            Btn_ToProjectReference.Size = new Size(96, 30);
+            Btn_ToProjectReference.TabIndex = 9;
+            Btn_ToProjectReference.Text = "轉成專案參考";
+            Btn_ToProjectReference.UseVisualStyleBackColor = true;
+            Btn_ToProjectReference.Click += Btn_ToProjectReference_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(936, 413);
+            ClientSize = new Size(881, 402);
+            Controls.Add(Btn_ToProjectReference);
+            Controls.Add(Btn_ToReference);
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
-            Controls.Add(Btn_Convert);
             Controls.Add(Tb_ShowPath);
             Controls.Add(Btn_GetFolder);
             MaximumSize = new Size(1000, 1000);
@@ -168,11 +180,12 @@
         private TextBox Tb_ShowPath;
         private ListBox Lb_ShowAllCsproj;
         private TextBox Tb_SaveFolder;
-        private Button Btn_Convert;
         private Label label1;
         private GroupBox groupBox1;
         private ListBox Lb_Allowlist;
         private ComboBox Cbx_Project_Allowlist;
         private GroupBox groupBox2;
+        private Button Btn_ToReference;
+        private Button Btn_ToProjectReference;
     }
 }

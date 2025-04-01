@@ -11,6 +11,7 @@ namespace ReferenceConversion.Data
     {
         private string curProjectName;
         private List<Project> projectAllowlist;
+        
 
         public AllowlistManager()
         {
@@ -58,18 +59,22 @@ namespace ReferenceConversion.Data
             guid = string.Empty;
 
             var selectedProject = projectAllowlist.FirstOrDefault(p => p.ProjectName.Equals(curProjectName, StringComparison.OrdinalIgnoreCase));
-            if (selectedProject != null)
+            if (selectedProject == null)
             {
-                var entry = selectedProject.Allowlist.FirstOrDefault(w => w.Name.Equals(referenceName, StringComparison.OrdinalIgnoreCase));
-                if (entry != null)
-                {
-                    version = entry.Version;
-                    guid = entry.Guid;
-                    return true;
-                }
+                Console.WriteLine($"[警告] 當前專案 ({curProjectName}) 不在白名單中");
+                return false;
             }
 
-            return false;
+            var entry = selectedProject.Allowlist.FirstOrDefault(w => w.Name.Equals(referenceName, StringComparison.OrdinalIgnoreCase));
+            if (entry == null)
+            {
+                Console.WriteLine($"[警告] 參考項目 ({referenceName}) 不在專案 {curProjectName} 的白名單中");
+                return false;
+            }
+
+            version = entry.Version;
+            guid = entry.Guid;
+            return true;
         }
 
         // 設定當前選擇的專案名稱
@@ -82,6 +87,12 @@ namespace ReferenceConversion.Data
         public List<string> GetProjectNames()
         {
             return projectAllowlist.Select(p => p.ProjectName).ToList();
+        }
+
+        public string GetProjectGuid(string projectName)
+        {
+            var project = projectAllowlist.FirstOrDefault(p => p.ProjectName.Equals(projectName, StringComparison.OrdinalIgnoreCase));
+            return project?.ProjectGuid;
         }
     }
 }

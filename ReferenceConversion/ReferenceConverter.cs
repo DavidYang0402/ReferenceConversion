@@ -17,7 +17,7 @@ namespace ReferenceConversion
             _allowlistManager = allowlistManager;
         }
 
-        public bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processedReferences)
+        public bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string slnGuid)
         {
             bool isChanged = false;
             XmlNodeList projectReferences = xmlDoc.GetElementsByTagName("ProjectReference");
@@ -49,6 +49,10 @@ namespace ReferenceConversion
                         nodesToRemove.Add(node);
                         processedReferences.Add(referenceName);  // 標記為已處理
                         isChanged = true;
+
+                        SlnModifier slnModifier = new SlnModifier(slnFilePath);
+                        slnModifier.RemoveProjectReferenceFromSln(referenceName, guid, slnGuid);
+                        //slnModifier.RemoveProjectReferenceFromSln(referenceName, guid);
                     }
                 }
             }
@@ -62,7 +66,7 @@ namespace ReferenceConversion
             return isChanged;
         }
 
-        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string saveFolder)
+        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string saveFolder, string slnFilePath, string slnGuid)
         {
             bool isChanged = false;
             XmlNodeList references = xmlDoc.GetElementsByTagName("Reference");
@@ -113,6 +117,9 @@ namespace ReferenceConversion
                         nodesToRemove.Add(node);
                         processedReferences.Add(referenceName);  // 標記為已處理
                         isChanged = true;
+
+                        SlnModifier slnModifier = new SlnModifier(slnFilePath);
+                        slnModifier.AddProjectReferenceToSln(referenceName, relativePath, slnGuid, projectGuid);
                     }
                 }
             }

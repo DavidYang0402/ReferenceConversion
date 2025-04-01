@@ -33,10 +33,10 @@
     },
     {
       "projectname": "For Testing Only CDCVGBCE",
-      "projectguid": "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBD}",
+      "projectguid": "{FAE04EC0-301F-11D3-BF4B-00C04F79EFCE}",
       "Allowlist": [
         {
-          "name": "ShareFunc",
+          "name": "ShareFunc2",
           "version": "4.0.0.0",
           "guid": "{47f55d99-cfb5-4f67-93a2-38bf9f3dfc07}"
         },
