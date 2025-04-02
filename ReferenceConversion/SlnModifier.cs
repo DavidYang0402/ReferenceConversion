@@ -44,7 +44,7 @@ namespace ReferenceConversion
             if (!slnContent.Contains($"{projectGuid}.Debug|Any CPU"))
             {
                 string projectConfig =
-                    $@"            {projectGuid}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                    $@"         {projectGuid}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
                 {projectGuid}.Debug|Any CPU.Build.0 = Debug|Any CPU
                 {projectGuid}.Release|Any CPU.ActiveCfg = Release|Any CPU
                 {projectGuid}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -80,6 +80,9 @@ namespace ReferenceConversion
                 Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
                 slnContent = regex.Replace(slnContent, "");
             }
+
+            // 移除多餘的空白行
+            slnContent = Regex.Replace(slnContent, @"^\s*\r?\n", "", RegexOptions.Multiline);
 
             // 將修改後的內容寫回 .sln 檔案
             File.WriteAllText(_slnPath, slnContent, Encoding.UTF8);           
