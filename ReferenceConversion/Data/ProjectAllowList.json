@@ -7,58 +7,66 @@
         {
           "name": "ShareFunc",
           "version": "4.0.0.0",
-          "guid": "{47f55d99-cfb5-4f67-93a2-38bf9f3dfc06}"
+          "guid": "{47f55d99-cfb5-4f67-93a2-38bf9f3dfc06}",
+          "path": "SysTools\\ShareFunc\\ShareFunc\\ShareFunc\\ShareFunc.csproj"
         },
         {
           "name": "ShareFunc.Base",
           "version": "1.0.0.0",
-          "guid": "{7d91dca0-a123-404e-92b9-13b22383fcea}"
+          "guid": "{7d91dca0-a123-404e-92b9-13b22383fcea}",
+          "path": "SysTools\\ShareFunc\\ShareFunc\\ShareFunc.Base\\ShareFunc.Base.csproj"
         },
         {
           "name": "ShareWebCtrl",
           "version": "1.0.0.0",
-          "guid": "{dc91cf90-0c17-4729-b2d8-405c08e9d8db}"
+          "guid": "{dc91cf90-0c17-4729-b2d8-405c08e9d8db}",
+          "path": "SysTools\\ShareFunc\\ShareFunc\\ShareWebCtrl\\ShareWebCtrl.csproj"
         },
         {
           "name": "ExcelHelper.Report",
           "version": "1.0.0.0",
-          "guid": "{fdd603b6-8b8e-4a51-bd21-4952cac67813}"
+          "guid": "{fdd603b6-8b8e-4a51-bd21-4952cac67813}",
+          "path": "SysTools\\ExcelHelper.Report\\ExcelHelper.Report.csproj"
         },
         {
           "name": "WordHelper.Report",
           "version": "1.0.0.0",
-          "guid": "{e2f7a933-9aec-4a16-b27a-d4c3f3c1601c}"
+          "guid": "{e2f7a933-9aec-4a16-b27a-d4c3f3c1601c}",
+          "path": "SysTools\\WordHelper.Report\\WordHelper.Report.csproj"
         }
       ]
     },
     {
-      "projectname": "For Testing Only CDCVGBCE",
-      "projectguid": "{FAE04EC0-301F-11D3-BF4B-00C04F79EFCE}",
+      "projectname": "RTIAcc",
+      "projectguid": "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}",
       "Allowlist": [
         {
-          "name": "ShareFunc2",
-          "version": "4.0.0.0",
-          "guid": "{47f55d99-cfb5-4f67-93a2-38bf9f3dfc07}"
-        },
-        {
-          "name": "ShareFunc2.Base",
-          "version": "5.0.0.0",
-          "guid": "{7d91dca0-a123-404e-92b9-13b22383fceb}"
-        },
-        {
-          "name": "ShareWebCtrl2",
+          "name": "DataTableExportCore",
           "version": "1.0.0.0",
-          "guid": "{dc91cf90-0c17-4729-b2d8-405c08e9d8dc}"
+          "guid": "{8CFD24D7-FC07-4399-9982-C507E04D446E}",
+          "path": "ShareCore\\trunk\\DataTableExportCore\\DataTableExportCore.csproj",
+          "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
         },
         {
-          "name": "ExcelHelper2.Report",
+          "name": "ExcelHelper.ReportNPOICore",
           "version": "1.0.0.0",
-          "guid": "{fdd603b6-8b8e-4a51-bd21-4952cac67814}"
+          "guid": "{A4BB32C5-2669-4838-8B0B-1713FD9F9E5F}",
+          "path": "ShareCore\\trunk\\ExcelHelper.ReportNPOICore\\ExcelHelper.ReportNPOICore.csproj",
+          "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
         },
         {
-          "name": "WordHelper2.Report",
+          "name": "ShareFuncCore",
           "version": "1.0.0.0",
-          "guid": "{e2f7a933-9aec-4a16-b27a-d4c3f3c1601d}"
+          "guid": "{0B068534-AF5A-48C9-93FB-4FA34E09D4F3}",
+          "path": "ShareCore\\trunk\\ShareFuncCore\\ShareFuncCore.csproj",
+          "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
+        },
+        {
+          "name": "ShareFuncCore.Base",
+          "version": "1.0.0.0",
+          "guid": "{F3955574-9EFF-4DB8-B30B-B5225C893743}",
+          "path": "ShareCore\\trunk\\ShareFuncCore.Base\\ShareFuncCore.Base.csproj",
+          "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
         }
       ]
     }

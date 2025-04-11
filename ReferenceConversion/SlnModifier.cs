@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Build.Locator;
+using Microsoft.Build.Evaluation;
 
 
 namespace ReferenceConversion
@@ -16,13 +18,12 @@ namespace ReferenceConversion
             _slnPath = slnPath;
         }
 
-        public void AddProjectReferenceToSln(string projectName, string projectPath, string projectGuid, string refGuid)
+        public void AddProjectReferenceToSln(string projectName, string projectPath, string projectGuid, string refGuid, string parentGuid)
         {
             string slnContent = File.ReadAllText(_slnPath);
 
             if (!slnContent.Contains(refGuid))
             {
-                // 尋找最後一個 `EndProject` 並插入新的 Project
                 int insertIndex = slnContent.LastIndexOf("EndProject");
                 if (insertIndex != -1)
                 {
@@ -44,7 +45,7 @@ namespace ReferenceConversion
             if (!slnContent.Contains($"{projectGuid}.Debug|Any CPU"))
             {
                 string projectConfig =
-                    $@"         {projectGuid}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                    $@"            {projectGuid}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
                 {projectGuid}.Debug|Any CPU.Build.0 = Debug|Any CPU
                 {projectGuid}.Release|Any CPU.ActiveCfg = Release|Any CPU
                 {projectGuid}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -55,9 +56,13 @@ namespace ReferenceConversion
                 }, RegexOptions.Singleline);
             }
 
+            if (!string.IsNullOrEmpty(parentGuid) && !slnContent.Contains(refGuid))
+            {
+                AddNestedProject(ref slnContent, refGuid, parentGuid);
+            }
+
             File.WriteAllText(_slnPath, slnContent, Encoding.UTF8);
         }
-
 
         public void RemoveProjectReferenceFromSln(string projectName, string refGuid, string projectGuid)
         {
@@ -81,11 +86,49 @@ namespace ReferenceConversion
                 slnContent = regex.Replace(slnContent, "");
             }
 
+            RemoveFromNestedProjects(ref slnContent, refGuid);
+
             // 移除多餘的空白行
             slnContent = Regex.Replace(slnContent, @"^\s*\r?\n", "", RegexOptions.Multiline);
 
             // 將修改後的內容寫回 .sln 檔案
             File.WriteAllText(_slnPath, slnContent, Encoding.UTF8);           
         }
+
+        public void AddNestedProject(ref string slnContent, string childGuid, string parentGuid)
+        {
+            string nestedEntry = $"\t\t{childGuid} = {parentGuid}\n";
+            var nestedRegex = new Regex(@"(GlobalSection\(NestedProjects\).*?)(EndGlobalSection)", RegexOptions.Singleline);
+
+            if (nestedRegex.IsMatch(slnContent))
+            {
+                slnContent = nestedRegex.Replace(slnContent, m =>
+                    m.Groups[1].Value + nestedEntry + m.Groups[2].Value
+                );
+            }
+            else
+            {
+                string newSection =
+                    $"\tGlobalSection(NestedProjects) = preSolution\n{nestedEntry}\tEndGlobalSection\n";
+                slnContent = Regex.Replace(slnContent, @"(Global\s*)", $"Global\n{newSection}");
+            }
+        }
+
+        public void RemoveFromNestedProjects(ref string slnContent, string childGuid)
+        {
+            var nestedRegex = new Regex(@"(GlobalSection\(NestedProjects\).*?EndGlobalSection)", RegexOptions.Singleline);
+
+            if (nestedRegex.IsMatch(slnContent))
+            {
+                slnContent = nestedRegex.Replace(slnContent, match =>
+                {
+                    var lines = match.Value.Split('\n')
+                                           .Where(line => !line.Contains(childGuid))
+                                           .ToList();
+                    return string.Join("\n", lines);
+                });
+            }
+        }
+
     }
 }

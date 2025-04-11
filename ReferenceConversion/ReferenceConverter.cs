@@ -32,7 +32,7 @@ namespace ReferenceConversion
                     // 若已處理過此項目則跳過
                     if (processedReferences.Contains(referenceName)) continue;
 
-                    if (_allowlistManager.IsInAllowlist(referenceName, out string version, out string guid))
+                    if (_allowlistManager.IsInAllowlist(referenceName, out string version, out string guid, out _, out string? parentGuid))
                     {
                         XmlElement reference = xmlDoc.CreateElement("Reference");
                         reference.SetAttribute("Include", $"{referenceName}, Version={version}, Culture=neutral, processorArchitecture=MSIL");
@@ -66,7 +66,7 @@ namespace ReferenceConversion
             return isChanged;
         }
 
-        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string saveFolder, string slnFilePath, string slnGuid)
+        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string slnGuid)
         {
             bool isChanged = false;
             XmlNodeList references = xmlDoc.GetElementsByTagName("Reference");
@@ -84,23 +84,9 @@ namespace ReferenceConversion
                     // 若已處理過此項目則跳過
                     if (processedReferences.Contains(referenceName)) continue;
 
-                    if (_allowlistManager.IsInAllowlist(referenceName, out _, out string projectGuid))
+                    if (_allowlistManager.IsInAllowlist(referenceName, out _, out string projectGuid, out string path, out string? parentGuid))
                     {
-                        string baseFolder = saveFolder;
-                        //如果 baseFolder 是空的，顯示錯誤訊息並結束方法
-                        if (string.IsNullOrEmpty(baseFolder))
-                        {
-                            baseFolder = "SysTools";
-                        }
-
-                        // 計算新的 Include 屬性
-                        string relativePath = Path.Combine("..", "..", "..", baseFolder, referenceName, $"{referenceName}.csproj");
-
-                        // 檢查路徑是否包含 "Share"，如果包含則修改為 ShareFunc 子資料夾
-                        if (relativePath.Contains("Share"))
-                        {
-                            relativePath = Path.Combine("..", "..", "..", baseFolder, "ShareFunc\\ShareFunc\\", referenceName, $"{referenceName}.csproj");
-                        }
+                        string relativePath = Path.Combine("..", "..", "..", path);
 
                         XmlElement projectReference = xmlDoc.CreateElement("ProjectReference");
                         projectReference.SetAttribute("Include", relativePath);
@@ -118,8 +104,11 @@ namespace ReferenceConversion
                         processedReferences.Add(referenceName);  // 標記為已處理
                         isChanged = true;
 
+                        // 提供給 .sln 的路徑
+                        string slnRelativePath = Path.Combine("..", "..", path);                   
+
                         SlnModifier slnModifier = new SlnModifier(slnFilePath);
-                        slnModifier.AddProjectReferenceToSln(referenceName, relativePath, slnGuid, projectGuid);
+                        slnModifier.AddProjectReferenceToSln(referenceName, slnRelativePath, slnGuid, projectGuid, parentGuid);
                     }
                 }
             }

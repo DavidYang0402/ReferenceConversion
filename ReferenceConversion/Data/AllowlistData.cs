@@ -35,5 +35,11 @@ namespace ReferenceConversion.Data
 
         [JsonProperty("guid")]
         public string Guid { get; set; }
+
+        [JsonProperty("path")]
+        public string Path { get; set; }
+
+        [JsonProperty("parent_guid")]
+        public string? ParentGuid { get; set; }
     }
 }

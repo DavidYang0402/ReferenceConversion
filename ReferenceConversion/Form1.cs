@@ -26,7 +26,7 @@ namespace ReferenceConversion
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Tb_SaveFolder.Text = "SysTools";
+            //Tb_SaveFolder.Text = "SysTools";
             allowlistManager.LoadProject();
             LoadProjectNamesToComboBox();
 
@@ -151,7 +151,8 @@ namespace ReferenceConversion
 
                     case ConversionType.ToProjectReference:
                         // 轉換 Reference → ProjectReference
-                        isChanged |= converter.ConvertReferenceToProjectReference(xmlDoc, processedReferences, Tb_SaveFolder.Text.Trim(), slnFilePath, slnGuid);
+                        //isChanged |= converter.ConvertReferenceToProjectReference(xmlDoc, processedReferences, Tb_SaveFolder.Text.Trim(), slnFilePath, slnGuid);
+                        isChanged |= converter.ConvertReferenceToProjectReference(xmlDoc, processedReferences, slnFilePath, slnGuid);
                         break;
                 }
 
@@ -220,12 +221,12 @@ namespace ReferenceConversion
                 return;
             }
 
-            string baseFolder = Tb_SaveFolder.Text.Trim();
-            if (string.IsNullOrEmpty(baseFolder))
-            {
-                MessageBox.Show("請輸入專案基底資料夾，例如 SysTools", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            //string baseFolder = Tb_SaveFolder.Text.Trim();
+            //if (string.IsNullOrEmpty(baseFolder))
+            //{
+            //    MessageBox.Show("請輸入專案基底資料夾，例如 SysTools", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
 
             string slnFilePath = FindSolutionFile(folderPath);
             if (string.IsNullOrEmpty(slnFilePath))
@@ -268,12 +269,12 @@ namespace ReferenceConversion
                 return;
             }
 
-            string baseFolder = Tb_SaveFolder.Text.Trim();
-            if (string.IsNullOrEmpty(baseFolder))
-            {
-                MessageBox.Show("請輸入專案基底資料夾，例如 SysTools", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            //string baseFolder = Tb_SaveFolder.Text.Trim();
+            //if (string.IsNullOrEmpty(baseFolder))
+            //{
+            //    MessageBox.Show("請輸入專案基底資料夾，例如 SysTools", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
 
             string slnFilePath = FindSolutionFile(folderPath);
             if (string.IsNullOrEmpty(slnFilePath))

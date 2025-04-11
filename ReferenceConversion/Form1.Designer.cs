@@ -136,7 +136,7 @@
             Btn_ToReference.Name = "Btn_ToReference";
             Btn_ToReference.Size = new Size(97, 30);
             Btn_ToReference.TabIndex = 8;
-            Btn_ToReference.Text = "轉成參考";
+            Btn_ToReference.Text = "轉成檔案參考";
             Btn_ToReference.UseVisualStyleBackColor = true;
             Btn_ToReference.Click += Btn_ToReference_Click;
             // 

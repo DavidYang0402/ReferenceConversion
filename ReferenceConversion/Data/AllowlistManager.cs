@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -21,21 +22,17 @@ namespace ReferenceConversion.Data
 
         public void LoadProject()
         {
-            // 取得應用程式根目錄 (發佈後的位置)
-            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            // 構建 Data 資料夾中的 AllowList.json 路徑
-            string jsonFilePath = Path.Combine(appDirectory, "Data", "ProjectAllowList.json");
+            // 取得應用程式的命名空間和嵌入資源名稱
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "ReferenceConversion.Data.ProjectAllowList.json";  // 假設嵌入的資源名稱為這個
 
-            if (File.Exists(jsonFilePath))
+            // 讀取嵌入的 JSON 檔案
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            using (var reader = new StreamReader(stream))
             {
-                string jsonContent = File.ReadAllText(jsonFilePath);
+                string jsonContent = reader.ReadToEnd();
                 var allowlistData = JsonConvert.DeserializeObject<AllowlistData>(jsonContent);
-
-               projectAllowlist = allowlistData.Projects;
-            }
-            else
-            {
-                MessageBox.Show("找不到 ProjectAllowList.json 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                projectAllowlist = allowlistData.Projects;
             }
         }
 
@@ -53,10 +50,12 @@ namespace ReferenceConversion.Data
             }
         }
         // 判斷是否在 Allowlist 中
-        public bool IsInAllowlist(string referenceName, out string version, out string guid)
+        public bool IsInAllowlist(string referenceName, out string version, out string guid, out string path, out string? parentGuid)
         {
             version = string.Empty;
             guid = string.Empty;
+            path = string.Empty;
+            parentGuid = string.Empty;
 
             var selectedProject = projectAllowlist.FirstOrDefault(p => p.ProjectName.Equals(curProjectName, StringComparison.OrdinalIgnoreCase));
             if (selectedProject == null)
@@ -74,6 +73,8 @@ namespace ReferenceConversion.Data
 
             version = entry.Version;
             guid = entry.Guid;
+            path = entry.Path;
+            parentGuid = entry.ParentGuid;
             return true;
         }
 
