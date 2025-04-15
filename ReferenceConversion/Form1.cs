@@ -1,9 +1,11 @@
 using Newtonsoft.Json;
 using ReferenceConversion.Data;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
+using Formatting = Newtonsoft.Json.Formatting;
 
 
 namespace ReferenceConversion
@@ -22,7 +24,6 @@ namespace ReferenceConversion
             converter = new ReferenceConverter(allowlistManager);
         }
 
-
         private void Form1_Load(object sender, EventArgs e)
         {
             //Tb_SaveFolder.Text = "SysTools";
@@ -30,7 +31,6 @@ namespace ReferenceConversion
             LoadProjectNamesToComboBox();
 
         }
-
 
         //Load Project Names to ComboBox
         private void LoadProjectNamesToComboBox()
@@ -46,6 +46,61 @@ namespace ReferenceConversion
                 Cbx_Project_Allowlist.SelectedIndex = 0;
             }
         }
+
+        //Get Folder
+        private void Btn_GetFolder_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+            {
+                // 設定初始路徑（可以選擇記住使用者上次選擇的資料夾）
+                folderDialog.SelectedPath = Tb_ShowPath.Text;
+
+                // 顯示資料夾選擇視窗
+                DialogResult result = folderDialog.ShowDialog();
+
+                // 如果使用者選擇了資料夾
+                if (result == DialogResult.OK)
+                {
+                    string folderPath = folderDialog.SelectedPath;
+                    Tb_ShowPath.Text = folderPath;  // 顯示選擇的資料夾路徑
+
+                    // 呼叫方法來載入資料夾中的 .csproj 檔案
+                    LoadSolutionToComboBox(folderPath);
+                }
+            }
+        }
+
+        private void LoadSolutionToComboBox(string directory)
+        {
+            var slnPath = FindSolutionFilesInDirectoryAndSubfolders(directory);
+            var fileInfos = slnPath.Select(path => new FileInfo(path)).ToList();
+
+            Cbx_solution_file.DataSource = fileInfos;
+            Cbx_solution_file.DisplayMember = "Name";
+            Cbx_solution_file.ValueMember = "FullName";
+
+            //MessageBox.Show($"找到 {fileInfos.Count} 個解決方案檔案。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //MessageBox.Show($"{Cbx_solution_file.DataSource}\n{Cbx_solution_file.DisplayMember}\n{Cbx_solution_file.ValueMember}");
+
+            if (fileInfos.Count == 1)
+            {
+                Cbx_solution_file.SelectedIndex = 0;
+            }
+        }
+
+        private static List<string> FindSolutionFilesInDirectoryAndSubfolders(string directory)
+        {
+            try
+            {
+                return Directory.GetFiles(directory, "*.sln", SearchOption.AllDirectories).ToList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"讀取資料夾時發生錯誤：{ex.Message}", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return new List<string>();
+            }
+        }
+
         //ComboBox SelectedIndexChanged
         private void Cbx_Project_Allowlist_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -68,29 +123,17 @@ namespace ReferenceConversion
             }
         }
 
-
-        //Get Folder
-        private void Btn_GetFolder_Click(object sender, EventArgs e)
+        private void Cbx_solution_file_SelectedIndexChanged(object sender, EventArgs e)
         {
-            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+            if (Cbx_solution_file.SelectedItem is FileInfo selectedFile)
             {
-                // 設定初始路徑（可以選擇記住使用者上次選擇的資料夾）
-                folderDialog.SelectedPath = Tb_ShowPath.Text;
+                Tb_Ref_Path.Clear();
 
-                // 顯示資料夾選擇視窗
-                DialogResult result = folderDialog.ShowDialog();
-
-                // 如果使用者選擇了資料夾
-                if (result == DialogResult.OK)
-                {
-                    string folderPath = folderDialog.SelectedPath;
-                    Tb_ShowPath.Text = folderPath;  // 顯示選擇的資料夾路徑
-
-                    // 呼叫方法來載入資料夾中的 .csproj 檔案
-                    LoadCsprojFiles(folderPath);
-                }
+                var slnDir = selectedFile.DirectoryName;
+                LoadCsprojFiles(slnDir);
             }
         }
+
         //Load Csproj Files
         private void LoadCsprojFiles(string folderPath)
         {
@@ -98,7 +141,6 @@ namespace ReferenceConversion
             {
                 // 讀取資料夾中的所有 .csproj 檔案
                 var csprojFiles = Directory.EnumerateFiles(folderPath, "*.csproj", SearchOption.AllDirectories);
-                //var csprojFiles = Directory.GetFiles(folderPath, "*.csproj");
 
                 if (csprojFiles.Any())
                 {
@@ -108,7 +150,6 @@ namespace ReferenceConversion
                     // 將所有 .csproj 檔案加入 ListBox
                     foreach (var file in csprojFiles)
                     {
-                        //Lb_ShowAllCsproj.Items.Add(Path.GetFileName(file));
                         string relativePath = Path.GetRelativePath(folderPath, file);
                         Lb_ShowAllCsproj.Items.Add(relativePath);
                     }
@@ -124,7 +165,6 @@ namespace ReferenceConversion
             }
         }
 
-
         //Process Csproj File
         private void ProcessCsprojFile(string csprojfile, ref bool hasChanges, string slnFilePath, ConversionType conversionType)
         {
@@ -135,22 +175,19 @@ namespace ReferenceConversion
 
                 bool isChanged = false;
 
-                // 清理 ToolsVersion 和 Sdk 屬性
-                //CleanToolsVersionAndSdk(xmlDoc);
-
                 // 使用 HashSet 追蹤已處理過的項目
                 HashSet<string> processedReferences = new HashSet<string>();
 
                 switch (conversionType)
                 {
                     case ConversionType.ToReference:
-                        // 轉換 ProjectReference → Reference
-                        isChanged |= converter.ConvertProjectReferenceToReference(xmlDoc, processedReferences, slnFilePath, slnGuid);
+                        //MessageBox.Show($"處理中 2 :{csprojfile}");
+                        string? dllFolderPath = string.IsNullOrWhiteSpace(Tb_Ref_Path.Text) ? null : Tb_Ref_Path.Text;
+                        isChanged |= converter.ConvertProjectReferenceToReference(xmlDoc, processedReferences, slnFilePath, slnGuid, dllFolderPath);
                         break;
 
                     case ConversionType.ToProjectReference:
                         // 轉換 Reference → ProjectReference
-                        //isChanged |= converter.ConvertReferenceToProjectReference(xmlDoc, processedReferences, Tb_SaveFolder.Text.Trim(), slnFilePath, slnGuid);
                         isChanged |= converter.ConvertReferenceToProjectReference(xmlDoc, processedReferences, slnFilePath, slnGuid);
                         break;
                 }
@@ -168,54 +205,6 @@ namespace ReferenceConversion
             }
         }
 
-        ////Clean ToolsVersion and Sdk
-        //private void CleanToolsVersionAndSdk(XmlDocument xmlDoc)
-        //{
-        //    // 移除 ToolsVersion 屬性
-        //    XmlAttribute toolsVersionAttribute = xmlDoc.SelectSingleNode("//Project/@ToolsVersion") as XmlAttribute;
-        //    if (toolsVersionAttribute != null)
-        //    {
-        //        toolsVersionAttribute.OwnerElement.Attributes.Remove(toolsVersionAttribute);
-        //    }
-
-        //    // 移除 Sdk 屬性
-        //    XmlAttribute sdkAttribute = xmlDoc.SelectSingleNode("//Project/@Sdk") as XmlAttribute;
-        //    if (sdkAttribute != null)
-        //    {
-        //        sdkAttribute.OwnerElement.Attributes.Remove(sdkAttribute);
-        //    }
-        //}
-
-        private string FindSolutionFile(string directory)
-        {
-            while (!string.IsNullOrEmpty(directory))
-            {
-                try
-                {
-                    var slnFiles = Directory.GetFiles(directory, "*.sln");
-                    if (slnFiles.Length > 0)
-                        return slnFiles[0];
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    // 權限問題就跳過這層資料夾，繼續往上找
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    // 目錄找不到也跳過
-                }
-                catch (IOException ex)
-                {
-                    // IO 問題可以 log 起來或自己決定要不要中止
-                    Console.WriteLine($"I/O error while accessing {directory}: {ex.Message}");
-                }
-
-                directory = Directory.GetParent(directory)?.FullName;
-            }
-
-            return null;
-        }
-
         public enum ConversionType
         {
             ToReference,
@@ -224,91 +213,96 @@ namespace ReferenceConversion
 
         private void Btn_ToReference_Click(object sender, EventArgs e)
         {
-            string folderPath = Tb_ShowPath.Text;
-            if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
+            // 從 ComboBox 選取的 .sln 檔案取得路徑
+            if (Cbx_solution_file.SelectedItem is FileInfo selectedSlnFile)
             {
-                MessageBox.Show("請選擇有效的資料夾路徑。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                string slnFilePath = selectedSlnFile.FullName;
+                string slnDirectory = Path.GetDirectoryName(slnFilePath)!;
 
-            var csprojFiles = Directory.EnumerateFiles(folderPath, "*.csproj", SearchOption.AllDirectories);
+                var csprojFiles = Directory.EnumerateFiles(slnDirectory, "*.csproj", SearchOption.AllDirectories);
+                if (!csprojFiles.Any())
+                {
+                    MessageBox.Show("資料夾中沒有找到 .csproj 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
-            if (!csprojFiles.Any())
-            {
-                MessageBox.Show("資料夾中沒有找到 .csproj 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                bool hasChanges = false;
 
-            //string baseFolder = Tb_SaveFolder.Text.Trim();
-            //if (string.IsNullOrEmpty(baseFolder))
-            //{
-            //    MessageBox.Show("請輸入專案基底資料夾，例如 SysTools", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    return;
-            //}
+                foreach (string csprojfile in csprojFiles)
+                {
+                    ProcessCsprojFile(csprojfile, ref hasChanges, slnFilePath, ConversionType.ToReference);
+                }
 
-            string slnFilePath = FindSolutionFile(folderPath);
-            if (string.IsNullOrEmpty(slnFilePath))
-            {
-                MessageBox.Show("找不到對應的 .sln 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            bool hasChanges = false;
-
-            foreach (string csprojfile in csprojFiles)
-            {
-                ProcessCsprojFile(csprojfile, ref hasChanges, slnFilePath, ConversionType.ToReference);
-            }
-
-            if (hasChanges)
-            {
-                MessageBox.Show("轉換為 Reference 完成。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (hasChanges)
+                {
+                    MessageBox.Show("轉換為 ProjectReference 完成。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("沒有檔案需要轉換為 ProjectReference。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
             else
             {
-                MessageBox.Show("沒有檔案需要轉換為 Reference。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("請先選擇一個 .sln 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void Btn_ToProjectReference_Click(object sender, EventArgs e)
         {
-            string folderPath = Tb_ShowPath.Text;
-            if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
+            if (Cbx_solution_file.SelectedItem is FileInfo selectedSlnFile)
             {
-                MessageBox.Show("請選擇有效的資料夾路徑。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                string slnFilePath = selectedSlnFile.FullName;
+                string slnDirectory = Path.GetDirectoryName(slnFilePath)!;
 
-            var csprojFiles = Directory.EnumerateFiles(folderPath, "*.csproj", SearchOption.AllDirectories);
+                var csprojFiles = Directory.EnumerateFiles(slnDirectory, "*.csproj", SearchOption.AllDirectories);
+                if (!csprojFiles.Any())
+                {
+                    MessageBox.Show("資料夾中沒有找到 .csproj 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
-            if (!csprojFiles.Any())
-            {
-                MessageBox.Show("資料夾中沒有找到 .csproj 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                bool hasChanges = false;
 
-            string slnFilePath = FindSolutionFile(folderPath);
-            if (string.IsNullOrEmpty(slnFilePath))
-            {
-                MessageBox.Show("找不到對應的 .sln 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+                foreach (string csprojfile in csprojFiles)
+                {
+                    ProcessCsprojFile(csprojfile, ref hasChanges, slnFilePath, ConversionType.ToProjectReference);
+                }
 
-            bool hasChanges = false;
-
-            foreach (string csprojfile in csprojFiles)
-            {
-                ProcessCsprojFile(csprojfile, ref hasChanges, slnFilePath, ConversionType.ToProjectReference);
-            }
-
-            if (hasChanges)
-            {
-                MessageBox.Show("轉換為 ProjectReference 完成。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (hasChanges)
+                {
+                    MessageBox.Show("轉換為 ProjectReference 完成。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("沒有檔案需要轉換為 ProjectReference。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
             else
             {
-                MessageBox.Show("沒有檔案需要轉換為 ProjectReference。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("請先選擇一個 .sln 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void Bt_Dll_Rel_Path_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
+            {
+                // 顯示資料夾選擇視窗
+                DialogResult result = folderDialog.ShowDialog();
+
+                // 如果使用者選擇了資料夾
+                if (result == DialogResult.OK)
+                {
+                    string folderPath = folderDialog.SelectedPath;
+                    Tb_Ref_Path.Text = folderPath;  // 顯示選擇的資料夾路徑
+                }
+            }
+        }
+
+        private void Bt_Clean_DllRef_Path_Click(object sender, EventArgs e)
+        {
+            Tb_Ref_Path.Clear();
         }
     }
 }

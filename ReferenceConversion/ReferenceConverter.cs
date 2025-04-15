@@ -17,7 +17,7 @@ namespace ReferenceConversion
             _allowlistManager = allowlistManager;
         }
 
-        public bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string slnGuid)
+        public bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string slnGuid, string? customDllPath)
         {
             bool isChanged = false;
             XmlNodeList projectReferences = xmlDoc.GetElementsByTagName("ProjectReference");
@@ -34,6 +34,21 @@ namespace ReferenceConversion
 
                     if (_allowlistManager.IsInAllowlist(referenceName, out string version, out string guid, out _, out string? parentGuid))
                     {
+                        string baseDllFolder = string.IsNullOrWhiteSpace(customDllPath)
+                            ? Path.Combine("App_Data", $"{referenceName}.dll")
+                            : Path.GetFullPath(
+                                Path.Combine(customDllPath.Trim(), $"{referenceName}.dll")
+                            );
+
+                        string dllPath = baseDllFolder;
+
+
+                        if (!string.IsNullOrWhiteSpace(customDllPath) && !File.Exists(dllPath))
+                        {
+                            Console.WriteLine($"警告：找不到 DLL：{dllPath}，已跳過 {referenceName}。");
+                            continue;
+                        }
+
                         XmlElement reference = xmlDoc.CreateElement("Reference");
                         reference.SetAttribute("Include", $"{referenceName}, Version={version}, Culture=neutral, processorArchitecture=MSIL");
 
@@ -42,7 +57,8 @@ namespace ReferenceConversion
                         reference.AppendChild(specificVersion);
 
                         XmlElement hintPath = xmlDoc.CreateElement("HintPath");
-                        hintPath.InnerText = Path.Combine("App_Data", $"{referenceName}.dll");
+                        hintPath.InnerText = dllPath;
+                        //hintPath.InnerText = Path.Combine("App_Data", $"{referenceName}.dll");
                         reference.AppendChild(hintPath);
 
                         node.ParentNode.AppendChild(reference);
@@ -52,7 +68,6 @@ namespace ReferenceConversion
 
                         SlnModifier slnModifier = new SlnModifier(slnFilePath);
                         slnModifier.RemoveProjectReferenceFromSln(referenceName, guid, slnGuid);
-                        //slnModifier.RemoveProjectReferenceFromSln(referenceName, guid);
                     }
                 }
             }
@@ -120,6 +135,6 @@ namespace ReferenceConversion
             }
 
             return isChanged;
-        }
+        }     
     }
 }
