@@ -31,8 +31,6 @@
             Btn_GetFolder = new Button();
             Tb_ShowPath = new TextBox();
             Lb_ShowAllCsproj = new ListBox();
-            Tb_SaveFolder = new TextBox();
-            label1 = new Label();
             groupBox1 = new GroupBox();
             Lb_Allowlist = new ListBox();
             Cbx_Project_Allowlist = new ComboBox();
@@ -67,24 +65,8 @@
             Lb_ShowAllCsproj.ItemHeight = 15;
             Lb_ShowAllCsproj.Location = new Point(8, 22);
             Lb_ShowAllCsproj.Name = "Lb_ShowAllCsproj";
-            Lb_ShowAllCsproj.Size = new Size(522, 214);
+            Lb_ShowAllCsproj.Size = new Size(522, 244);
             Lb_ShowAllCsproj.TabIndex = 2;
-            // 
-            // Tb_SaveFolder
-            // 
-            Tb_SaveFolder.Location = new Point(181, 248);
-            Tb_SaveFolder.Name = "Tb_SaveFolder";
-            Tb_SaveFolder.Size = new Size(349, 23);
-            Tb_SaveFolder.TabIndex = 3;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(8, 253);
-            label1.Name = "label1";
-            label1.Size = new Size(169, 15);
-            label1.TabIndex = 5;
-            label1.Text = "Project Reference 指定資料夾";
             // 
             // groupBox1
             // 
@@ -120,8 +102,6 @@
             // groupBox2
             // 
             groupBox2.Controls.Add(Lb_ShowAllCsproj);
-            groupBox2.Controls.Add(label1);
-            groupBox2.Controls.Add(Tb_SaveFolder);
             groupBox2.Location = new Point(319, 66);
             groupBox2.Name = "groupBox2";
             groupBox2.Padding = new Padding(5);
@@ -169,7 +149,6 @@
             Load += Form1_Load;
             groupBox1.ResumeLayout(false);
             groupBox2.ResumeLayout(false);
-            groupBox2.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -179,8 +158,6 @@
         private Button Btn_GetFolder;
         private TextBox Tb_ShowPath;
         private ListBox Lb_ShowAllCsproj;
-        private TextBox Tb_SaveFolder;
-        private Label label1;
         private GroupBox groupBox1;
         private ListBox Lb_Allowlist;
         private ComboBox Cbx_Project_Allowlist;

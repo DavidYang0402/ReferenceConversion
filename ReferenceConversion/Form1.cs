@@ -13,7 +13,6 @@ namespace ReferenceConversion
 
         private AllowlistManager allowlistManager;
         private ReferenceConverter converter;
-        private SlnModifier slnModifier;
         private string slnGuid;
 
         public Form1()
@@ -137,7 +136,7 @@ namespace ReferenceConversion
                 bool isChanged = false;
 
                 // 清理 ToolsVersion 和 Sdk 屬性
-                CleanToolsVersionAndSdk(xmlDoc);
+                //CleanToolsVersionAndSdk(xmlDoc);
 
                 // 使用 HashSet 追蹤已處理過的項目
                 HashSet<string> processedReferences = new HashSet<string>();
@@ -169,32 +168,51 @@ namespace ReferenceConversion
             }
         }
 
-        //Clean ToolsVersion and Sdk
-        private void CleanToolsVersionAndSdk(XmlDocument xmlDoc)
-        {
-            // 移除 ToolsVersion 屬性
-            XmlAttribute toolsVersionAttribute = xmlDoc.SelectSingleNode("//Project/@ToolsVersion") as XmlAttribute;
-            if (toolsVersionAttribute != null)
-            {
-                toolsVersionAttribute.OwnerElement.Attributes.Remove(toolsVersionAttribute);
-            }
+        ////Clean ToolsVersion and Sdk
+        //private void CleanToolsVersionAndSdk(XmlDocument xmlDoc)
+        //{
+        //    // 移除 ToolsVersion 屬性
+        //    XmlAttribute toolsVersionAttribute = xmlDoc.SelectSingleNode("//Project/@ToolsVersion") as XmlAttribute;
+        //    if (toolsVersionAttribute != null)
+        //    {
+        //        toolsVersionAttribute.OwnerElement.Attributes.Remove(toolsVersionAttribute);
+        //    }
 
-            // 移除 Sdk 屬性
-            XmlAttribute sdkAttribute = xmlDoc.SelectSingleNode("//Project/@Sdk") as XmlAttribute;
-            if (sdkAttribute != null)
-            {
-                sdkAttribute.OwnerElement.Attributes.Remove(sdkAttribute);
-            }
-        }
+        //    // 移除 Sdk 屬性
+        //    XmlAttribute sdkAttribute = xmlDoc.SelectSingleNode("//Project/@Sdk") as XmlAttribute;
+        //    if (sdkAttribute != null)
+        //    {
+        //        sdkAttribute.OwnerElement.Attributes.Remove(sdkAttribute);
+        //    }
+        //}
 
         private string FindSolutionFile(string directory)
         {
             while (!string.IsNullOrEmpty(directory))
             {
-                var slnFiles = Directory.GetFiles(directory, "*.sln");
-                if (slnFiles.Length > 0) return slnFiles[0];
+                try
+                {
+                    var slnFiles = Directory.GetFiles(directory, "*.sln");
+                    if (slnFiles.Length > 0)
+                        return slnFiles[0];
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // 權限問題就跳過這層資料夾，繼續往上找
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // 目錄找不到也跳過
+                }
+                catch (IOException ex)
+                {
+                    // IO 問題可以 log 起來或自己決定要不要中止
+                    Console.WriteLine($"I/O error while accessing {directory}: {ex.Message}");
+                }
+
                 directory = Directory.GetParent(directory)?.FullName;
             }
+
             return null;
         }
 
@@ -268,13 +286,6 @@ namespace ReferenceConversion
                 MessageBox.Show("資料夾中沒有找到 .csproj 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
-            //string baseFolder = Tb_SaveFolder.Text.Trim();
-            //if (string.IsNullOrEmpty(baseFolder))
-            //{
-            //    MessageBox.Show("請輸入專案基底資料夾，例如 SysTools", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    return;
-            //}
 
             string slnFilePath = FindSolutionFile(folderPath);
             if (string.IsNullOrEmpty(slnFilePath))

@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Build.Locator;
-using Microsoft.Build.Evaluation;
 
 
 namespace ReferenceConversion
@@ -42,21 +40,37 @@ namespace ReferenceConversion
                 Console.WriteLine("[警告] 已經存在該專案或參照，跳過插入");
             }
 
-            if (!slnContent.Contains($"{projectGuid}.Debug|Any CPU"))
+            if (!slnContent.Contains($"{refGuid}.Debug|Any CPU") && !string.IsNullOrEmpty(parentGuid))
             {
-                string projectConfig =
-                    $@"            {projectGuid}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-                {projectGuid}.Debug|Any CPU.Build.0 = Debug|Any CPU
-                {projectGuid}.Release|Any CPU.ActiveCfg = Release|Any CPU
-                {projectGuid}.Release|Any CPU.Build.0 = Release|Any CPU
-    ";
+                string projectConfig = $@"
+                {refGuid}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {refGuid}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {refGuid}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {refGuid}.Release|Any CPU.Build.0 = Release|Any CPU
+";
+
                 slnContent = Regex.Replace(slnContent, @"(GlobalSection\(ProjectConfigurationPlatforms\).*?EndGlobalSection)", match =>
                 {
                     return match.Groups[1].Value.Insert(match.Groups[1].Value.LastIndexOf("EndGlobalSection"), projectConfig);
                 }, RegexOptions.Singleline);
             }
 
-            if (!string.IsNullOrEmpty(parentGuid) && !slnContent.Contains(refGuid))
+            if (!slnContent.Contains($"{projectGuid}.Debug|Any CPU"))
+            {
+                string projectConfig = $@"
+                {projectGuid}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {projectGuid}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {projectGuid}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {projectGuid}.Release|Any CPU.Build.0 = Release|Any CPU
+";
+
+                slnContent = Regex.Replace(slnContent, @"(GlobalSection\(ProjectConfigurationPlatforms\).*?EndGlobalSection)", match =>
+                {
+                    return match.Groups[1].Value.Insert(match.Groups[1].Value.LastIndexOf("EndGlobalSection"), projectConfig);
+                }, RegexOptions.Singleline);
+            }
+
+            if (!string.IsNullOrEmpty(parentGuid) && !slnContent.Contains($"{refGuid} = {parentGuid}"))
             {
                 AddNestedProject(ref slnContent, refGuid, parentGuid);
             }
@@ -86,6 +100,15 @@ namespace ReferenceConversion
                 slnContent = regex.Replace(slnContent, "");
             }
 
+            if (!Regex.IsMatch(slnContent, $@"\{{{Regex.Escape(refGuid)}}}"))
+            {
+                // 如果該 ProjectGuid 不再被其他地方使用，則刪除 ProjectConfigurationPlatforms 配置
+                string pattern = $@"\s*{Regex.Escape(refGuid)}\.[^\n]*ActiveCfg\s*=[^\n]*[\s\S]*?\s*{Regex.Escape(refGuid)}\.[^\n]*Build.0\s*=[^\n]*";
+
+                Regex regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+                slnContent = regex.Replace(slnContent, "");
+            }
+
             RemoveFromNestedProjects(ref slnContent, refGuid);
 
             // 移除多餘的空白行
@@ -109,7 +132,7 @@ namespace ReferenceConversion
             else
             {
                 string newSection =
-                    $"\tGlobalSection(NestedProjects) = preSolution\n{nestedEntry}\tEndGlobalSection\n";
+                $"\tGlobalSection(NestedProjects) = preSolution\n{nestedEntry}\tEndGlobalSection\n";
                 slnContent = Regex.Replace(slnContent, @"(Global\s*)", $"Global\n{newSection}");
             }
         }
