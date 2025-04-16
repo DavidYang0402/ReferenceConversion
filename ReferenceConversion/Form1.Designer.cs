@@ -42,8 +42,6 @@
             label1 = new Label();
             Tb_Ref_Path = new TextBox();
             groupBox3 = new GroupBox();
-            Bt_Clean_DllRef_Path = new Button();
-            Bt_Dll_Rel_Path = new Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -171,44 +169,23 @@
             // 
             // Tb_Ref_Path
             // 
+            Tb_Ref_Path.BackColor = SystemColors.HighlightText;
             Tb_Ref_Path.Location = new Point(6, 17);
             Tb_Ref_Path.Name = "Tb_Ref_Path";
-            Tb_Ref_Path.PlaceholderText = "預設路徑： App_Data/example.dll";
+            Tb_Ref_Path.PlaceholderText = "DLL 預設路徑";
             Tb_Ref_Path.ReadOnly = true;
             Tb_Ref_Path.Size = new Size(385, 23);
             Tb_Ref_Path.TabIndex = 12;
             // 
             // groupBox3
             // 
-            groupBox3.Controls.Add(Bt_Clean_DllRef_Path);
-            groupBox3.Controls.Add(Bt_Dll_Rel_Path);
             groupBox3.Controls.Add(Tb_Ref_Path);
-            groupBox3.Location = new Point(25, 272);
+            groupBox3.Location = new Point(25, 283);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(397, 73);
+            groupBox3.Size = new Size(397, 56);
             groupBox3.TabIndex = 13;
             groupBox3.TabStop = false;
-            groupBox3.Text = "DLL Reference 路徑：";
-            // 
-            // Bt_Clean_DllRef_Path
-            // 
-            Bt_Clean_DllRef_Path.Location = new Point(233, 44);
-            Bt_Clean_DllRef_Path.Name = "Bt_Clean_DllRef_Path";
-            Bt_Clean_DllRef_Path.Size = new Size(75, 23);
-            Bt_Clean_DllRef_Path.TabIndex = 15;
-            Bt_Clean_DllRef_Path.Text = "清除路徑";
-            Bt_Clean_DllRef_Path.UseVisualStyleBackColor = true;
-            Bt_Clean_DllRef_Path.Click += Bt_Clean_DllRef_Path_Click;
-            // 
-            // Bt_Dll_Rel_Path
-            // 
-            Bt_Dll_Rel_Path.Location = new Point(316, 44);
-            Bt_Dll_Rel_Path.Name = "Bt_Dll_Rel_Path";
-            Bt_Dll_Rel_Path.Size = new Size(75, 23);
-            Bt_Dll_Rel_Path.TabIndex = 14;
-            Bt_Dll_Rel_Path.Text = "選取資料夾";
-            Bt_Dll_Rel_Path.UseVisualStyleBackColor = true;
-            Bt_Dll_Rel_Path.Click += Bt_Dll_Rel_Path_Click;
+            groupBox3.Text = "DLL 預設路徑：";
             // 
             // Form1
             // 
@@ -254,7 +231,5 @@
         private Label label2;
         private TextBox Tb_Ref_Path;
         private GroupBox groupBox3;
-        private Button Bt_Dll_Rel_Path;
-        private Button Bt_Clean_DllRef_Path;
     }
 }

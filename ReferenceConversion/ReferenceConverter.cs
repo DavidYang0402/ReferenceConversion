@@ -17,7 +17,7 @@ namespace ReferenceConversion
             _allowlistManager = allowlistManager;
         }
 
-        public bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string slnGuid, string? customDllPath)
+        public bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath)
         {
             bool isChanged = false;
             XmlNodeList projectReferences = xmlDoc.GetElementsByTagName("ProjectReference");
@@ -27,30 +27,21 @@ namespace ReferenceConversion
             {
                 foreach (XmlNode node in projectReferences)
                 {
-                    string referenceName = Path.GetFileNameWithoutExtension(node.Attributes["Include"].Value);
+                    var includeAttr = node.Attributes?["Include"];
+                    if (includeAttr == null) continue;
+
+                    string referenceName = Path.GetFileNameWithoutExtension(includeAttr.Value);
+                    //string referenceName = Path.GetFileNameWithoutExtension(node.Attributes["Include"].Value);
 
                     // 若已處理過此項目則跳過
                     if (processedReferences.Contains(referenceName)) continue;
 
-                    if (_allowlistManager.IsInAllowlist(referenceName, out string version, out string guid, out _, out string? parentGuid))
+                    if (_allowlistManager.IsInAllowlist(referenceName, out var project, out var entry))
                     {
-                        string baseDllFolder = string.IsNullOrWhiteSpace(customDllPath)
-                            ? Path.Combine("App_Data", $"{referenceName}.dll")
-                            : Path.GetFullPath(
-                                Path.Combine(customDllPath.Trim(), $"{referenceName}.dll")
-                            );
-
-                        string dllPath = baseDllFolder;
-
-
-                        if (!string.IsNullOrWhiteSpace(customDllPath) && !File.Exists(dllPath))
-                        {
-                            Console.WriteLine($"警告：找不到 DLL：{dllPath}，已跳過 {referenceName}。");
-                            continue;
-                        }
+                        string dllPath = Path.Combine(project.DllPath, $"{referenceName}.dll");
 
                         XmlElement reference = xmlDoc.CreateElement("Reference");
-                        reference.SetAttribute("Include", $"{referenceName}, Version={version}, Culture=neutral, processorArchitecture=MSIL");
+                        reference.SetAttribute("Include", $"{entry.Name}, Version={entry.Version}, Culture=neutral, processorArchitecture=MSIL");
 
                         XmlElement specificVersion = xmlDoc.CreateElement("SpecificVersion");
                         specificVersion.InnerText = "False";
@@ -67,7 +58,7 @@ namespace ReferenceConversion
                         isChanged = true;
 
                         SlnModifier slnModifier = new SlnModifier(slnFilePath);
-                        slnModifier.RemoveProjectReferenceFromSln(referenceName, guid, slnGuid);
+                        slnModifier.RemoveProjectReferenceFromSln(entry.Name, entry.Guid, project.ProjectGuid);
                     }
                 }
             }
@@ -81,7 +72,7 @@ namespace ReferenceConversion
             return isChanged;
         }
 
-        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string slnGuid)
+        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath)
         {
             bool isChanged = false;
             XmlNodeList references = xmlDoc.GetElementsByTagName("Reference");
@@ -91,39 +82,42 @@ namespace ReferenceConversion
             {
                 foreach (XmlNode node in references)
                 {
-                    string referenceAttr = node.Attributes["Include"]?.Value;
+                    var includeAttr = node.Attributes?["Include"];
+                    if (includeAttr == null) continue;
+
+                    string referenceAttr = includeAttr.Value;
                     if (string.IsNullOrEmpty(referenceAttr)) continue;
 
                     string referenceName = referenceAttr.Split(',')[0];
 
                     // 若已處理過此項目則跳過
                     if (processedReferences.Contains(referenceName)) continue;
-
-                    if (_allowlistManager.IsInAllowlist(referenceName, out _, out string projectGuid, out string path, out string? parentGuid))
+                   
+                    if (_allowlistManager.IsInAllowlist(referenceName, out var project, out var entry))
                     {
-                        string relativePath = Path.Combine("..", "..", "..", path);
+                        string relativePath = Path.Combine("..", "..", "..", entry.Path);
 
                         XmlElement projectReference = xmlDoc.CreateElement("ProjectReference");
                         projectReference.SetAttribute("Include", relativePath);
 
                         XmlElement projectGuidElement = xmlDoc.CreateElement("Project");
-                        projectGuidElement.InnerText = projectGuid;
+                        projectGuidElement.InnerText = project.ProjectGuid;
                         projectReference.AppendChild(projectGuidElement);
 
                         XmlElement nameElement = xmlDoc.CreateElement("Name");
-                        nameElement.InnerText = referenceName;
+                        nameElement.InnerText = entry.Name;
                         projectReference.AppendChild(nameElement);
 
                         node.ParentNode.AppendChild(projectReference);
                         nodesToRemove.Add(node);
-                        processedReferences.Add(referenceName);  // 標記為已處理
+                        processedReferences.Add(entry.Name);  // 標記為已處理
                         isChanged = true;
 
                         // 提供給 .sln 的路徑
-                        string slnRelativePath = Path.Combine("..", "..", path);                   
+                        string slnRelativePath = Path.Combine("..", "..", entry.Path);                   
 
                         SlnModifier slnModifier = new SlnModifier(slnFilePath);
-                        slnModifier.AddProjectReferenceToSln(referenceName, slnRelativePath, slnGuid, projectGuid, parentGuid);
+                        slnModifier.AddProjectReferenceToSln(entry.Name, slnRelativePath, project.ProjectGuid, entry.Guid, entry.ParentGuid);
                     }
                 }
             }

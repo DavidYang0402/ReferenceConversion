@@ -27,12 +27,21 @@ namespace ReferenceConversion.Data
             var resourceName = "ReferenceConversion.Data.ProjectAllowList.json";  // 假設嵌入的資源名稱為這個
 
             // 讀取嵌入的 JSON 檔案
+            // 讀取嵌入的 JSON 檔案
             using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var reader = new StreamReader(stream))
             {
-                string jsonContent = reader.ReadToEnd();
-                var allowlistData = JsonConvert.DeserializeObject<AllowlistData>(jsonContent);
-                projectAllowlist = allowlistData.Projects;
+                // 檢查 stream 是否為 null
+                if (stream == null)
+                {
+                    throw new InvalidOperationException($"找不到嵌入資源: {resourceName}");
+                }
+
+                using (var reader = new StreamReader(stream))
+                {
+                    string jsonContent = reader.ReadToEnd();
+                    var allowlistData = JsonConvert.DeserializeObject<AllowlistData>(jsonContent);
+                    projectAllowlist = allowlistData.Projects;
+                }
             }
         }
 
@@ -50,37 +59,28 @@ namespace ReferenceConversion.Data
             }
         }
         // 判斷是否在 Allowlist 中
-        public bool IsInAllowlist(string referenceName, out string version, out string guid, out string path, out string? parentGuid)
+        public bool IsInAllowlist(string referenceName, out Project? project, out Allowlist? entry)
         {
-            version = string.Empty;
-            guid = string.Empty;
-            path = string.Empty;
-            parentGuid = string.Empty;
-
-            var selectedProject = projectAllowlist.FirstOrDefault(p => p.ProjectName.Equals(curProjectName, StringComparison.OrdinalIgnoreCase));
-            if (selectedProject == null)
+            project = projectAllowlist.FirstOrDefault(p => p.ProjectName.Equals(curProjectName, StringComparison.OrdinalIgnoreCase));
+            if (project == null)
             {
-                Console.WriteLine($"[警告] 當前專案 ({curProjectName}) 不在白名單中");
+                entry = null;
                 return false;
             }
 
-            var entry = selectedProject.Allowlist.FirstOrDefault(w => w.Name.Equals(referenceName, StringComparison.OrdinalIgnoreCase));
-            if (entry == null)
-            {
-                Console.WriteLine($"[警告] 參考項目 ({referenceName}) 不在專案 {curProjectName} 的白名單中");
-                return false;
-            }
-
-            version = entry.Version;
-            guid = entry.Guid;
-            path = entry.Path;
-            parentGuid = entry.ParentGuid;
-            return true;
+            entry = project.Allowlist.FirstOrDefault(a => a.Name.Equals(referenceName, StringComparison.OrdinalIgnoreCase));
+            return entry != null;
         }
+
 
         // 設定當前選擇的專案名稱
         public void SetCurrentProjectName(string projectName)
         {
+            if (string.IsNullOrEmpty(projectName))
+            {
+                throw new ArgumentException("專案名稱為空", nameof(projectName));
+            }
+
             curProjectName = projectName;
         }
 
@@ -90,10 +90,11 @@ namespace ReferenceConversion.Data
             return projectAllowlist.Select(p => p.ProjectName).ToList();
         }
 
-        public string GetProjectGuid(string projectName)
+        public string? GetProjectDllPath(string projectName)
         {
             var project = projectAllowlist.FirstOrDefault(p => p.ProjectName.Equals(projectName, StringComparison.OrdinalIgnoreCase));
-            return project?.ProjectGuid;
+            return project?.DllPath;
         }
+
     }
 }

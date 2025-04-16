@@ -3,6 +3,7 @@
     {
       "projectname": "CDCVGBCE",
       "projectguid": "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+      "dllpath": "..\\CDCVGBCE\\App_Data\\",
       "Allowlist": [
         {
           "name": "ShareFunc",
@@ -39,6 +40,7 @@
     {
       "projectname": "RTIAcc",
       "projectguid": "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}",
+      "dllpath": "..\\RTIAcc\\Lib\\",
       "Allowlist": [
         {
           "name": "DataTableExportCore",
