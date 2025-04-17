@@ -1,4 +1,4 @@
-﻿namespace ReferenceConversion
+﻿namespace ReferenceConversion.Presentation
 {
     partial class Form1
     {

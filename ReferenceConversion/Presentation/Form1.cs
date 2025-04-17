@@ -1,5 +1,8 @@
 using Newtonsoft.Json;
 using ReferenceConversion.Data;
+using ReferenceConversion.Domain.Interfaces;
+using ReferenceConversion.Infrastructure.ConversionStrategies;
+using ReferenceConversion.Modifier;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -8,18 +11,19 @@ using System.Xml.Linq;
 using Formatting = Newtonsoft.Json.Formatting;
 
 
-namespace ReferenceConversion
+namespace ReferenceConversion.Presentation
 {
     public partial class Form1 : Form
     {
         private AllowlistManager allowlistManager;
-        private ReferenceConverter converter;
+        private readonly IReferenceConverter _referenceConverter;
 
-        public Form1()
+        public Form1(IReferenceConverter referenceConverter)
         {
             InitializeComponent();
             allowlistManager = new AllowlistManager();
-            converter = new ReferenceConverter(allowlistManager);
+            Func<string, ISlnModifier> slnModifierFactory = slnPath => new SlnModifier(slnPath);
+            _referenceConverter = referenceConverter;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -62,7 +66,6 @@ namespace ReferenceConversion
                     string folderPath = folderDialog.SelectedPath;
                     Tb_ShowPath.Text = folderPath;  // 顯示選擇的資料夾路徑
 
-                    // 呼叫方法來載入資料夾中的 .csproj 檔案
                     LoadSolutionToComboBox(folderPath);
                 }
             }
@@ -76,9 +79,6 @@ namespace ReferenceConversion
             Cbx_solution_file.DataSource = fileInfos;
             Cbx_solution_file.DisplayMember = "Name";
             Cbx_solution_file.ValueMember = "FullName";
-
-            //MessageBox.Show($"找到 {fileInfos.Count} 個解決方案檔案。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //MessageBox.Show($"{Cbx_solution_file.DataSource}\n{Cbx_solution_file.DisplayMember}\n{Cbx_solution_file.ValueMember}");
 
             if (fileInfos.Count == 1)
             {
@@ -164,39 +164,13 @@ namespace ReferenceConversion
         //Process Csproj File
         private void ProcessCsprojFile(string csprojfile, ref bool hasChanges, string slnFilePath, ConversionType conversionType)
         {
-            try
+            CsprojFileProcessor processor = new CsprojFileProcessor(_referenceConverter);
+            bool isChanged = processor.ProcessFile(csprojfile, conversionType, slnFilePath);
+
+            // 儲存變更
+            if (isChanged)
             {
-                XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(csprojfile);
-
-                bool isChanged = false;
-
-                // 使用 HashSet 追蹤已處理過的項目
-                HashSet<string> processedReferences = new HashSet<string>();
-
-                switch (conversionType)
-                {
-                    case ConversionType.ToReference:
-                        //MessageBox.Show($"處理中 2 :{csprojfile}");                       
-                        isChanged |= converter.ConvertProjectReferenceToReference(xmlDoc, processedReferences, slnFilePath);
-                        break;
-
-                    case ConversionType.ToProjectReference:
-                        // 轉換 Reference → ProjectReference
-                        isChanged |= converter.ConvertReferenceToProjectReference(xmlDoc, processedReferences, slnFilePath);
-                        break;
-                }
-
-                // 儲存變更
-                if (isChanged)
-                {
-                    xmlDoc.Save(csprojfile);
-                    hasChanges = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"處理檔案時出現錯誤: {ex.Message}", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                hasChanges = true;         
             }
         }
 
