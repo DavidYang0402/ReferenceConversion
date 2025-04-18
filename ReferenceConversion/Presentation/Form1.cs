@@ -1,7 +1,8 @@
 using Newtonsoft.Json;
-using ReferenceConversion.Data;
+using ReferenceConversion.Domain.Enum;
 using ReferenceConversion.Domain.Interfaces;
 using ReferenceConversion.Infrastructure.ConversionStrategies;
+using ReferenceConversion.Infrastructure.Services;
 using ReferenceConversion.Modifier;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -15,28 +16,28 @@ namespace ReferenceConversion.Presentation
 {
     public partial class Form1 : Form
     {
-        private AllowlistManager allowlistManager;
-        private readonly IReferenceConverter _referenceConverter;
+        private readonly IAllowlistManager _allowlistManager;
+        private readonly IStrategyBasedConverter _referenceConverter;
+        private readonly CsprojFileProcessor _csprojProcessor;
 
-        public Form1(IReferenceConverter referenceConverter)
+        public Form1(IStrategyBasedConverter referenceConverter, CsprojFileProcessor csprojProcessor, IAllowlistManager allowlistManager)
         {
             InitializeComponent();
-            allowlistManager = new AllowlistManager();
-            Func<string, ISlnModifier> slnModifierFactory = slnPath => new SlnModifier(slnPath);
             _referenceConverter = referenceConverter;
+            _csprojProcessor = csprojProcessor;
+            _allowlistManager = allowlistManager;
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            allowlistManager.LoadProject();
+            _allowlistManager.LoadProject();
             LoadProjectNamesToComboBox();
         }
 
-        //Load Project Names to ComboBox
         private void LoadProjectNamesToComboBox()
         {
             Cbx_Project_Allowlist.Items.Clear();
-            var projectNames = allowlistManager.GetProjectNames();
+            var projectNames = _allowlistManager.GetProjectNames();
 
             foreach (var projectName in projectNames)
             {
@@ -49,7 +50,6 @@ namespace ReferenceConversion.Presentation
             }
         }
 
-        //Get Folder
         private void Btn_GetFolder_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
@@ -99,16 +99,15 @@ namespace ReferenceConversion.Presentation
             }
         }
 
-        //ComboBox SelectedIndexChanged
         private void Cbx_Project_Allowlist_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (Cbx_Project_Allowlist.SelectedItem != null)
             {
                 string selectedProject = Cbx_Project_Allowlist.SelectedItem.ToString();
-                allowlistManager.SetCurrentProjectName(selectedProject);
-                allowlistManager.DisplayAllowlistForProject(selectedProject, Lb_Allowlist);
+                _allowlistManager.SetCurrentProjectName(selectedProject);
+                _allowlistManager.DisplayAllowlistForProject(selectedProject, Lb_Allowlist);
 
-                Tb_Ref_Path.Text = allowlistManager.GetProjectDllPath(selectedProject);
+                Tb_Ref_Path.Text = _allowlistManager.GetProjectDllPath(selectedProject);
             }
             else
             {
@@ -120,14 +119,12 @@ namespace ReferenceConversion.Presentation
         {
             if (Cbx_solution_file.SelectedItem is FileInfo selectedFile)
             {
-                Tb_Ref_Path.Clear();
-
                 string? slnDir = selectedFile.DirectoryName;
                 LoadCsprojFiles(slnDir);
             }
         }
 
-        //Load Csproj Files
+
         private void LoadCsprojFiles(string? folderPath)
         {
             if (string.IsNullOrWhiteSpace(folderPath))
@@ -161,95 +158,41 @@ namespace ReferenceConversion.Presentation
             }            
         }
 
-        //Process Csproj File
-        private void ProcessCsprojFile(string csprojfile, ref bool hasChanges, string slnFilePath, ConversionType conversionType)
+        private void ProcessCsprojFile(string csprojfile, ref bool hasChanges, string slnFilePath, ReferenceConversionMode mode)
         {
-            CsprojFileProcessor processor = new CsprojFileProcessor(_referenceConverter);
-            bool isChanged = processor.ProcessFile(csprojfile, conversionType, slnFilePath);
-
-            // 儲存變更
+            bool isChanged = _csprojProcessor.ProcessFile(csprojfile, mode, slnFilePath);
             if (isChanged)
-            {
-                hasChanges = true;         
-            }
+                hasChanges = true;
         }
 
-        public enum ConversionType
-        {
-            ToReference,
-            ToProjectReference
-        }
+        private void Btn_ToReference_Click(object sender, EventArgs e) => ExecuteConversion(ReferenceConversionMode.ProjectToDll);
 
-        private void Btn_ToReference_Click(object sender, EventArgs e)
+        private void Btn_ToProjectReference_Click(object sender, EventArgs e) => ExecuteConversion(ReferenceConversionMode.DllToProject);
+
+        private void ExecuteConversion(ReferenceConversionMode mode)
         {
-            // 從 ComboBox 選取的 .sln 檔案取得路徑
-            if (Cbx_solution_file.SelectedItem is FileInfo selectedSlnFile)
+            if (Cbx_solution_file.SelectedItem is FileInfo selected)
             {
-                string slnFilePath = selectedSlnFile.FullName;
-                string slnDirectory = Path.GetDirectoryName(slnFilePath)!;
-
-                var csprojFiles = Directory.EnumerateFiles(slnDirectory, "*.csproj", SearchOption.AllDirectories);
+                var slnPath = selected.FullName;
+                var dir = Path.GetDirectoryName(slnPath)!;
+                var csprojFiles = Directory.EnumerateFiles(dir, "*.csproj", SearchOption.AllDirectories);
                 if (!csprojFiles.Any())
                 {
                     MessageBox.Show("資料夾中沒有找到 .csproj 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-
                 bool hasChanges = false;
+                foreach (var file in csprojFiles)
+                    ProcessCsprojFile(file, ref hasChanges, slnPath, mode);
 
-                foreach (string csprojfile in csprojFiles)
-                {
-                    ProcessCsprojFile(csprojfile, ref hasChanges, slnFilePath, ConversionType.ToReference);
-                }
-
-                if (hasChanges)
-                {
-                    MessageBox.Show("轉換為 ProjectReference 完成。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show("沒有檔案需要轉換為 ProjectReference。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                var msg = hasChanges
+                    ? "轉換完成。"
+                    : "沒有檔案需要轉換。";
+                MessageBox.Show(msg, "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                MessageBox.Show("請先選擇一個 .sln 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void Btn_ToProjectReference_Click(object sender, EventArgs e)
-        {
-            if (Cbx_solution_file.SelectedItem is FileInfo selectedSlnFile)
-            {
-                string slnFilePath = selectedSlnFile.FullName;
-                string slnDirectory = Path.GetDirectoryName(slnFilePath)!;
-
-                var csprojFiles = Directory.EnumerateFiles(slnDirectory, "*.csproj", SearchOption.AllDirectories);
-                if (!csprojFiles.Any())
-                {
-                    MessageBox.Show("資料夾中沒有找到 .csproj 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                bool hasChanges = false;
-
-                foreach (string csprojfile in csprojFiles)
-                {
-                    ProcessCsprojFile(csprojfile, ref hasChanges, slnFilePath, ConversionType.ToProjectReference);
-                }
-
-                if (hasChanges)
-                {
-                    MessageBox.Show("轉換為 ProjectReference 完成。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                else
-                {
-                    MessageBox.Show("沒有檔案需要轉換為 ProjectReference。", "訊息", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
-            else
-            {
-                MessageBox.Show("請先選擇一個 .sln 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("請先選擇 .sln 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

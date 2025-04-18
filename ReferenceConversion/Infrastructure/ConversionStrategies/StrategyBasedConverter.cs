@@ -11,11 +11,11 @@ using ReferenceConversion.Applications.Interfaces;
 
 namespace ReferenceConversion.Infrastructure.ConversionStrategies
 {
-    public class ReferenceConverter : IReferenceConverter
+    public class StrategyBasedConverter : IStrategyBasedConverter
     {
         private readonly Dictionary<ReferenceConversionMode, IReferenceConversionStrategy> _strategies;
 
-        public ReferenceConverter(IEnumerable<IReferenceConversionStrategy> strategies)
+        public StrategyBasedConverter(IEnumerable<IReferenceConversionStrategy> strategies)
         {
             _strategies = new Dictionary<ReferenceConversionMode, IReferenceConversionStrategy>();
 
@@ -25,14 +25,14 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
             }
         }
 
-        public bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath)
+        public bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processed, string slnFilePath)
         {
-            return _strategies[ReferenceConversionMode.ProjectToDll].Convert(xmlDoc, processedReferences, slnFilePath);
+            return _strategies[ReferenceConversionMode.ProjectToDll].Convert(xmlDoc, processed, slnFilePath);
         }
 
-        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath)
+        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processed, string slnFilePath)
         {
-            return _strategies[ReferenceConversionMode.DllToProject].Convert(xmlDoc, processedReferences, slnFilePath);
+            return _strategies[ReferenceConversionMode.DllToProject].Convert(xmlDoc, processed, slnFilePath);
         }
     }
 }

@@ -40,7 +40,7 @@
     {
       "projectname": "RTIAcc",
       "projectguid": "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}",
-      "dllpath": "..\\RTIAcc\\Lib\\",
+      "dllpath": "..\\RTIAcc\\Libs\\",
       "Allowlist": [
         {
           "name": "DataTableExportCore",

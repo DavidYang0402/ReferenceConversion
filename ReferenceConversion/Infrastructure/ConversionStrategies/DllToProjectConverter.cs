@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using ReferenceConversion.Data;
 using ReferenceConversion.Modifier;
 using ReferenceConversion.Domain.Interfaces;
 using ReferenceConversion.Applications.Interfaces;
 using ReferenceConversion.Domain.Enum;
+using ReferenceConversion.Infrastructure.Services;
 
 namespace ReferenceConversion.Infrastructure.ConversionStrategies
 {
@@ -16,10 +16,10 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
     {
         public ReferenceConversionMode Mode => ReferenceConversionMode.DllToProject;
 
-        private readonly AllowlistManager _allowlistManager;
+        private readonly IAllowlistManager _allowlistManager;
         private readonly Func<string, ISlnModifier> _slnModifierFactory;
 
-        public DllToProjectConverter(AllowlistManager allowlistManager, Func<string, ISlnModifier> slnModifierFactory)
+        public DllToProjectConverter(IAllowlistManager allowlistManager, Func<string, ISlnModifier> slnModifierFactory)
         {
             _allowlistManager = allowlistManager;
             _slnModifierFactory = slnModifierFactory;

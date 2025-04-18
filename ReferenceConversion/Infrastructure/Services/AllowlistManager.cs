@@ -5,10 +5,12 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using ReferenceConversion.Data;
+using ReferenceConversion.Domain.Interfaces;
 
-namespace ReferenceConversion.Data
+namespace ReferenceConversion.Infrastructure.Services
 {
-    public class AllowlistManager
+    public class AllowlistManager : IAllowlistManager
     {
         private string _currentProjectName = string.Empty;
         private List<Project> _projectAllowlist = new();
@@ -64,7 +66,7 @@ namespace ReferenceConversion.Data
             _currentProjectName = projectName.Trim();
         }
 
-        public List<string> GetProjectNames()
+        public IEnumerable<string> GetProjectNames()
         {
             return _projectAllowlist.Select(p => p.ProjectName).ToList();
         }
@@ -74,7 +76,7 @@ namespace ReferenceConversion.Data
             return FindProject(projectName)?.DllPath;
         }
 
-        private Project? FindProject(string projectName)
+        public Project? FindProject(string projectName)
         {
             return _projectAllowlist.FirstOrDefault(p =>
                 p.ProjectName.Equals(projectName, StringComparison.OrdinalIgnoreCase));

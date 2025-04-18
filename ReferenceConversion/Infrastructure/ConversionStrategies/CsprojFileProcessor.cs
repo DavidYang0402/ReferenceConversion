@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using ReferenceConversion.Domain.Enum;
 using ReferenceConversion.Domain.Interfaces;
 using static ReferenceConversion.Presentation.Form1;
 
@@ -12,37 +13,48 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
 {
     public class CsprojFileProcessor
     {
-        private readonly IReferenceConverter _converter;
+        private readonly IStrategyBasedConverter _converter;
 
-        public CsprojFileProcessor(IReferenceConverter converter)
+        public CsprojFileProcessor(IStrategyBasedConverter converter)
         {
             _converter = converter;
         }
 
-        public bool ProcessFile(string csprojFile, ConversionType conversionType, string slnFilePath) 
+        public bool ProcessFile(string csprojFile, ReferenceConversionMode mode, string slnFilePath) 
         {
+            Debug.WriteLine($"Processing file: {csprojFile}");
+
             try
             {
+                Debug.WriteLine($"Processing csproj: {csprojFile}");
+
+                // 讀檔並檢查開頭
+                string content = File.ReadAllText(csprojFile);
+                var trimmed = content.TrimStart();
+                if (string.IsNullOrWhiteSpace(trimmed) || !trimmed.StartsWith("<"))
+                {
+                    Debug.WriteLine($"[跳過] 檔案不是有效 XML: {csprojFile}");
+                    return false;
+                }
+
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(csprojFile);
 
                 bool isChanged = false;
-                HashSet<string> processedReferences = new HashSet<string>();
+                var processed = new HashSet<string>();
+                //HashSet<string> processedReferences = new HashSet<string>();
 
-                switch (conversionType)
+                switch (mode)
                 {
-                    case ConversionType.ToReference:
-                        isChanged |= _converter.ConvertProjectReferenceToReference(xmlDoc, processedReferences, slnFilePath);
+                    case ReferenceConversionMode.ProjectToDll:
+                        isChanged |= _converter.ConvertProjectReferenceToReference(xmlDoc, processed, slnFilePath);
                         break;
-                    case ConversionType.ToProjectReference:
-                        isChanged |= _converter.ConvertReferenceToProjectReference(xmlDoc, processedReferences, slnFilePath);
+                    case ReferenceConversionMode.DllToProject:
+                        isChanged |= _converter.ConvertReferenceToProjectReference(xmlDoc, processed, slnFilePath);
                         break;
                 }
 
-                if (isChanged)
-                {
-                    xmlDoc.Save(csprojFile);
-                }
+                if (isChanged) xmlDoc.Save(csprojFile);
 
                 return isChanged;
             }
