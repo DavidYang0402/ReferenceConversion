@@ -27,7 +27,6 @@ namespace ReferenceConversion.Infrastructure.Services
             var firstDir = GetShareCoreRootFromAllowlistPath(refPath);
 
             string? shareCoreDir = FindDirectoryUpwards(slnDir, firstDir);
-            Debug.WriteLine($"................: {shareCoreDir}");
 
             if (shareCoreDir == null)
             {
@@ -99,8 +98,6 @@ namespace ReferenceConversion.Infrastructure.Services
         {
             // 抓出 allowlist 裡面 path 的第一層目錄
             string firstDir = allowlistRelativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
-
-            Debug.WriteLine($"................: {firstDir}");
 
             return firstDir;
         }
