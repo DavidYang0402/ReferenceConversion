@@ -63,8 +63,9 @@ namespace ReferenceConversion.Applications.Services
                     nodesToRemove.Add(node);
                     processedReferences.Add(referenceName);
                     isChanged = true;
+
+                    _dllCopier.Copy(slnFilePath, referenceName, project.DllPath);
                 }
-                _dllCopier.Copy(slnFilePath, project.ProjectName, referenceName, project.DllPath);
             }
 
             foreach (XmlNode node in nodesToRemove)

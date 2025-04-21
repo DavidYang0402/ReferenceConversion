@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ReferenceConversion.Shared;
 
 
 namespace ReferenceConversion.Modifier
@@ -117,11 +118,13 @@ namespace ReferenceConversion.Modifier
         {
             try
             {
+                //Logger.LogInfo($"正在讀取 .sln 檔案: {_slnPath}");
                 return File.ReadAllText(_slnPath);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[錯誤] 無法讀取 .sln 檔案: {ex.Message}");
+                //Logger.LogError($"[錯誤] 無法讀取 .sln 檔案: {_slnPath}, 錯誤訊息: {ex.Message}", ex);
                 throw; // 可選：根據需要重新拋出或處理
             }
         }
@@ -129,11 +132,13 @@ namespace ReferenceConversion.Modifier
         {
             try
             {
+                //Logger.LogInfo($"正在寫入 .sln 檔案: {_slnPath}");
                 File.WriteAllText(_slnPath, content, Encoding.UTF8);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[錯誤] 無法寫入 .sln 檔案: {ex.Message}");
+                //Logger.LogError($"[錯誤] 無法寫入 .sln 檔案: {_slnPath}, 錯誤訊息: {ex.Message}", ex);
                 throw;
             }
         }
