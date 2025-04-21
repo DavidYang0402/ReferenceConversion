@@ -7,6 +7,7 @@ using ReferenceConversion.Domain.Interfaces;
 using StrategyBasedConverter = ReferenceConversion.Infrastructure.ConversionStrategies.StrategyBasedConverter;
 using ReferenceConversion.Modifier;
 using ReferenceConversion.Infrastructure.Services;
+using ReferenceConversion.Applications.Services;
 
 namespace ReferenceConversion
 {
@@ -33,6 +34,7 @@ namespace ReferenceConversion
                     // 3) 策略註冊
                     services.AddSingleton<IReferenceConversionStrategy, ProjectToDllConverter>();
                     services.AddSingleton<IReferenceConversionStrategy, DllToProjectConverter>();
+                    services.AddSingleton<IDllCopier, DllCopier>();
 
                     // 4) 策略總指揮 (實作了 IReferenceConverter)
                     services.AddSingleton<IStrategyBasedConverter, StrategyBasedConverter>();

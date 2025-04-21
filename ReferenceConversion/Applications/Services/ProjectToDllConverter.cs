@@ -12,7 +12,7 @@ using ReferenceConversion.Domain.Interfaces;
 using ReferenceConversion.Infrastructure.Services;
 using ReferenceConversion.Modifier;
 
-namespace ReferenceConversion.Infrastructure.ConversionStrategies
+namespace ReferenceConversion.Applications.Services
 {
     public class ProjectToDllConverter : IReferenceConversionStrategy
     {
@@ -20,11 +20,13 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
 
         private readonly IAllowlistManager _allowlistManager;
         private readonly Func<string, ISlnModifier> _slnModifierFactory;
+        private readonly IDllCopier _dllCopier;
 
-        public ProjectToDllConverter(IAllowlistManager allowlistManager, Func<string, ISlnModifier> slnModifierFactory)
+        public ProjectToDllConverter(IAllowlistManager allowlistManager, Func<string, ISlnModifier> slnModifierFactory, IDllCopier dllCopier)
         {
             _allowlistManager = allowlistManager;
             _slnModifierFactory = slnModifierFactory;
+            _dllCopier = dllCopier;
         }
 
         public bool Convert(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath)
@@ -42,15 +44,10 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
 
                 if (_allowlistManager.IsInAllowlist(referenceName, out var project, out var entry))
                 {
-                    var mainCsproj =  IsMainProject(slnFilePath, project.ProjectName);
-
-                    //Debug.WriteLine($"show current main csproj: {mainCsproj}");
-
                     var newElement = xmlDoc.CreateElement("Reference");
                     string dllPath = Path.Combine(project.DllPath, $"{referenceName}.dll");
 
                     newElement.SetAttribute("Include", $"{entry.Name}, Version={entry.Version}, Culture=neutral, processorArchitecture=MSIL");
-                    //newElement.SetAttribute("Include", $"{entry.Name}");
 
                     var specificVersion = xmlDoc.CreateElement("SpecificVersion");
                     specificVersion.InnerText = "False";
@@ -67,63 +64,13 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
                     processedReferences.Add(referenceName);
                     isChanged = true;
                 }
+                _dllCopier.Copy(slnFilePath, project.ProjectName, referenceName, project.DllPath);
             }
 
             foreach (XmlNode node in nodesToRemove)
                 node.ParentNode?.RemoveChild(node);
 
             return isChanged;
-        }
-
-
-        private string IsMainProject(string slnPath, string proName)
-        {
-
-            var slnDir = Path.GetDirectoryName(slnPath);
-            var csprojFiles = Directory.EnumerateFiles(slnDir, "*.csproj", searchOption:SearchOption.AllDirectories);
-
-            var mainCsproj = csprojFiles
-                .FirstOrDefault(path => 
-                Path.GetFileNameWithoutExtension(path).Equals(proName, StringComparison.OrdinalIgnoreCase));
-
-            if(csprojFiles != null)
-            {
-                Debug.WriteLine($"主專案找到啦！檔案路徑：{mainCsproj}");
-            }
-            else
-            {
-                Debug.WriteLine("沒找到主專案!");
-            }
-
-            return mainCsproj;
-        }
-
-        private void CopyMainDllToLibs(string csprojPath, string refName)
-        {
-            var csprojDir = Path.GetDirectoryName(csprojPath);
-            var csprojFiles = Directory.EnumerateFiles(csprojDir, "*.dll", searchOption: SearchOption.AllDirectories);
-
-            var allowDll = csprojFiles
-                .FirstOrDefault(path =>
-                Path.GetFileNameWithoutExtension(path).Equals(refName, StringComparison.OrdinalIgnoreCase));
-
-            if (allowDll != null)
-            {
-                //// 確保 Libs 資料夾存在
-                //Directory.CreateDirectory(libsTargetDir);
-
-                //var targetPath = Path.Combine(libsTargetDir, Path.GetFileName(allowDll));
-
-                //// 如果已經存在就覆蓋
-                //File.Copy(allowDll, targetPath, overwrite: true);
-
-                //Debug.WriteLine($"✅ 複製成功！{allowDll} → {targetPath}");
-            }
-            else
-            {
-                Debug.WriteLine($"⚠️ 找不到符合名稱 {refName} 的 DLL");
-            }
-        }
-
+        }      
     }
 }

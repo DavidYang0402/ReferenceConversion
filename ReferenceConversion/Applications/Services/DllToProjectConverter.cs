@@ -10,7 +10,7 @@ using ReferenceConversion.Applications.Interfaces;
 using ReferenceConversion.Domain.Enum;
 using ReferenceConversion.Infrastructure.Services;
 
-namespace ReferenceConversion.Infrastructure.ConversionStrategies
+namespace ReferenceConversion.Applications.Services
 {
     public class DllToProjectConverter : IReferenceConversionStrategy
     {

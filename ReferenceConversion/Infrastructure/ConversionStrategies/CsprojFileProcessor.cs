@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using ReferenceConversion.Domain.Enum;
 using ReferenceConversion.Domain.Interfaces;
+using ReferenceConversion.Shared;
 using static ReferenceConversion.Presentation.Form1;
 
 namespace ReferenceConversion.Infrastructure.ConversionStrategies
@@ -22,18 +23,14 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
 
         public bool ProcessFile(string csprojFile, ReferenceConversionMode mode, string slnFilePath) 
         {
-            Debug.WriteLine($"Processing file: {csprojFile}");
-
             try
             {
-                Debug.WriteLine($"Processing csproj: {csprojFile}");
-
                 // 讀檔並檢查開頭
                 string content = File.ReadAllText(csprojFile);
                 var trimmed = content.TrimStart();
                 if (string.IsNullOrWhiteSpace(trimmed) || !trimmed.StartsWith("<"))
                 {
-                    Debug.WriteLine($"[跳過] 檔案不是有效 XML: {csprojFile}");
+                    Logger.LogInfo($"[跳過] 檔案不是有效 XML: {csprojFile}");
                     return false;
                 }
 
@@ -60,7 +57,7 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error processing file {csprojFile}: {ex.Message}");
+                Logger.LogError($"Error processing file {csprojFile}: {ex.Message}");
                 return false;
             }
         }
