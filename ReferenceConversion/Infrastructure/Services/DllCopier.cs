@@ -13,7 +13,7 @@ namespace ReferenceConversion.Infrastructure.Services
     {
         public DllCopier() { }
 
-        public void Copy(string slnPath, string refName, string libsTargetDir)
+        public void Copy(string slnPath, string refName, string libsTargetDir, string refPath)
         {
             string? slnDir = Path.GetDirectoryName(slnPath);
             if (slnDir == null)
@@ -24,10 +24,14 @@ namespace ReferenceConversion.Infrastructure.Services
 
             Logger.LogDebug($"專案所在目錄：{slnDir}");
 
-            string? shareCoreDir = FindDirectoryUpwards(slnDir, "ShareCore");
+            var firstDir = GetShareCoreRootFromAllowlistPath(refPath);
+
+            string? shareCoreDir = FindDirectoryUpwards(slnDir, firstDir);
+            Debug.WriteLine($"................: {shareCoreDir}");
+
             if (shareCoreDir == null)
             {
-                Logger.LogError("無法從 sln 路徑向上找到 'ShareCore' 目錄");
+                Logger.LogError($"無法從 sln 路徑向上找到 '{firstDir}' 目錄");
                 return;
             }
 
@@ -70,6 +74,7 @@ namespace ReferenceConversion.Infrastructure.Services
             try
             {
                 Directory.CreateDirectory(libsTargetDirFull);
+
             }
             catch (Exception ex)
             {
@@ -89,6 +94,17 @@ namespace ReferenceConversion.Infrastructure.Services
                 Logger.LogError($"複製失敗：{ex.Message}\n", ex);
             }
         }
+
+        public string? GetShareCoreRootFromAllowlistPath(string allowlistRelativePath)
+        {
+            // 抓出 allowlist 裡面 path 的第一層目錄
+            string firstDir = allowlistRelativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
+
+            Debug.WriteLine($"................: {firstDir}");
+
+            return firstDir;
+        }
+
 
         private string? FindLibsInSiblingProject(string slnDir)
         {
@@ -115,7 +131,6 @@ namespace ReferenceConversion.Infrastructure.Services
 
             return null;
         }
-
 
         private string? FindDirectoryUpwards(string startDir, string targetFolderName)
         {

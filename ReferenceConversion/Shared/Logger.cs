@@ -10,7 +10,7 @@ namespace ReferenceConversion.Shared
     public class Logger
     {
         private static readonly object _fileLock = new();
-        private static readonly string _logDir = @"C:\Reference_Covert_Logs";
+        private static readonly string _logDir = @"D:\WorkTest\Reference_Covert_Logs";
         private const long MaxLogSizeBytes = 5 * 1024 * 1024; // 5MB
 
         static Logger()

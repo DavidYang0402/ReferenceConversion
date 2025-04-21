@@ -64,7 +64,7 @@ namespace ReferenceConversion.Applications.Services
                     processedReferences.Add(referenceName);
                     isChanged = true;
 
-                    _dllCopier.Copy(slnFilePath, referenceName, project.DllPath);
+                    _dllCopier.Copy(slnFilePath, referenceName, project.DllPath, entry.Path);
                 }
             }
 

@@ -107,7 +107,7 @@ namespace ReferenceConversion.Presentation
                 _allowlistManager.SetCurrentProjectName(selectedProject);
                 _allowlistManager.DisplayAllowlistForProject(selectedProject, Lb_Allowlist);
 
-                Tb_Ref_Path.Text = _allowlistManager.GetProjectDllPath(selectedProject);
+                Tb_Ref_Path.Text = Path.Combine( "..", _allowlistManager.GetProjectDllPath(selectedProject));
             }
             else
             {
