@@ -1,15 +1,7 @@
-using Newtonsoft.Json;
-using ReferenceConversion.Domain.Enum;
+ï»¿using ReferenceConversion.Domain.Enum;
 using ReferenceConversion.Domain.Interfaces;
 using ReferenceConversion.Infrastructure.ConversionStrategies;
-using ReferenceConversion.Infrastructure.Services;
-using ReferenceConversion.Modifier;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Linq;
-using Formatting = Newtonsoft.Json.Formatting;
+using ReferenceConversion.Shared;
 
 
 namespace ReferenceConversion.Presentation
@@ -17,21 +9,33 @@ namespace ReferenceConversion.Presentation
     public partial class Form1 : Form
     {
         private readonly IAllowlistManager _allowlistManager;
-        private readonly IStrategyBasedConverter _referenceConverter;
         private readonly CsprojFileProcessor _csprojProcessor;
 
-        public Form1(IStrategyBasedConverter referenceConverter, CsprojFileProcessor csprojProcessor, IAllowlistManager allowlistManager)
+        public Form1(CsprojFileProcessor csprojProcessor, IAllowlistManager allowlistManager)
         {
             InitializeComponent();
-            _referenceConverter = referenceConverter;
             _csprojProcessor = csprojProcessor;
             _allowlistManager = allowlistManager;
+
+            Pnl_Log.Visible = false;
+            Btn_Clear_Log.Visible = false;
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            this.Width = 560;
+
             _allowlistManager.LoadProject();
             LoadProjectNamesToComboBox();
+
+            Logger.LogToUI = msg =>
+            {
+                if (InvokeRequired)
+                    Invoke(() => Lb_Log.Items.Add(msg));
+                else
+                    Lb_Log.Items.Add(msg);
+            };
+
         }
 
         private void LoadProjectNamesToComboBox()
@@ -54,26 +58,37 @@ namespace ReferenceConversion.Presentation
         {
             using (FolderBrowserDialog folderDialog = new FolderBrowserDialog())
             {
-                // ³]©wªì©l¸ô®|¡]¥i¥H¿ï¾Ü°O¦í¨Ï¥ÎªÌ¤W¦¸¿ï¾Üªº¸ê®Æ§¨¡^
+                // è¨­å®šåˆå§‹è·¯å¾‘ï¼ˆå¯ä»¥é¸æ“‡è¨˜ä½ä½¿ç”¨è€…ä¸Šæ¬¡é¸æ“‡çš„è³‡æ–™å¤¾ï¼‰
                 folderDialog.SelectedPath = Tb_ShowPath.Text;
 
-                // Åã¥Ü¸ê®Æ§¨¿ï¾Üµøµ¡
+                // é¡¯ç¤ºè³‡æ–™å¤¾é¸æ“‡è¦–çª—
                 DialogResult result = folderDialog.ShowDialog();
 
-                // ¦pªG¨Ï¥ÎªÌ¿ï¾Ü¤F¸ê®Æ§¨
+                // å¦‚æœä½¿ç”¨è€…é¸æ“‡äº†è³‡æ–™å¤¾
                 if (result == DialogResult.OK)
                 {
                     string folderPath = folderDialog.SelectedPath;
-                    Tb_ShowPath.Text = folderPath;  // Åã¥Ü¿ï¾Üªº¸ê®Æ§¨¸ô®|
+                    Tb_ShowPath.Text = folderPath;  // é¡¯ç¤ºé¸æ“‡çš„è³‡æ–™å¤¾è·¯å¾‘
 
                     LoadSolutionToComboBox(folderPath);
                 }
             }
         }
 
-        private void LoadSolutionToComboBox(string directory)
+        private void LoadSolutionToComboBox(string baseDirectory)
         {
-            var slnPath = FindSolutionFilesInDirectoryAndSubfolders(directory);
+            //å˜—è©¦æ‰¾å‡º trunk è³‡æ–™å¤¾ï¼ˆå¤§å°å¯«ä¸æ‹˜ï¼‰
+            var trunkPath = Directory.EnumerateDirectories(baseDirectory)
+                                     .FirstOrDefault(d => Path.GetFileName(d).Equals("trunk", StringComparison.OrdinalIgnoreCase));
+
+            if (string.IsNullOrEmpty(trunkPath))
+            {
+                MessageBox.Show("æ‰¾ä¸åˆ° trunk è³‡æ–™å¤¾ï¼Œè«‹ç¢ºèªç›®éŒ„çµæ§‹æ˜¯å¦æ­£ç¢ºã€‚", "éŒ¯èª¤", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Cbx_solution_file.DataSource = null;
+                return;
+            }
+
+            var slnPath = FindSolutionFilesInDirectoryAndSubfolders(trunkPath);
             var fileInfos = slnPath.Select(path => new FileInfo(path)).ToList();
 
             Cbx_solution_file.DataSource = fileInfos;
@@ -94,7 +109,7 @@ namespace ReferenceConversion.Presentation
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Åª¨ú¸ê®Æ§¨®Éµo¥Í¿ù»~¡G{ex.Message}", "¿ù»~", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"è®€å–è³‡æ–™å¤¾æ™‚ç™¼ç”ŸéŒ¯èª¤ï¼š{ex.Message}", "éŒ¯èª¤", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return new List<string>();
             }
         }
@@ -104,14 +119,21 @@ namespace ReferenceConversion.Presentation
             if (Cbx_Project_Allowlist.SelectedItem != null)
             {
                 string selectedProject = Cbx_Project_Allowlist.SelectedItem.ToString();
+
                 _allowlistManager.SetCurrentProjectName(selectedProject);
                 _allowlistManager.DisplayAllowlistForProject(selectedProject, Lb_Allowlist);
 
-                Tb_Ref_Path.Text = Path.Combine( "..", _allowlistManager.GetProjectDllPath(selectedProject));
+                LocateProjectPathAndShow(selectedProject);
+                Tb_Ref_Path.Text = Path.Combine("..", _allowlistManager.GetProjectDllPath(selectedProject));
+
+                //Set UI Properties
+                Lb_Convert_Status.Text = "è½‰æ›ç‹€æ…‹ï¼šç„¡";
+                Lb_Convert_Status.ForeColor = Color.Black;
+                Lb_Log.Items.Clear();
             }
             else
             {
-                 MessageBox.Show("½Ğ¿ï¾Ü¤@­Ó±M®×¡C", "¿ù»~", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("è«‹é¸æ“‡ä¸€å€‹å°ˆæ¡ˆã€‚", "éŒ¯èª¤", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -124,18 +146,45 @@ namespace ReferenceConversion.Presentation
             }
         }
 
+        //å– WorkProjects: è‡ªå‹•å°‹æ‰¾ WorkProjectsï¼Œæœƒä¾åºå¾ C:\ï¼Œæœå°‹æ‰€æœ‰æ›¹
+        public void LocateProjectPathAndShow(string projectName)
+        {
+            string? foundPath = null;
+
+            foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed))
+            {
+                string possiblePath = Path.Combine(drive.RootDirectory.FullName, "WorkProjects", projectName);
+
+                if (Directory.Exists(possiblePath))
+                {
+                    foundPath = possiblePath;
+                    break;
+                }
+            }
+
+            if (foundPath != null)
+            {
+                Tb_ShowPath.Text = foundPath;
+                LoadSolutionToComboBox(foundPath);
+            }
+            else
+            {
+                Tb_ShowPath.Text = "æ‰¾ä¸åˆ° WorkProjects å°ˆæ¡ˆ";
+            }
+        }
+
 
         private void LoadCsprojFiles(string? folderPath)
         {
             if (string.IsNullOrWhiteSpace(folderPath))
             {
-                MessageBox.Show("¸ê®Æ§¨¸ô®|¬°ªÅ©ÎµL®Ä¡C", "¿ù»~", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("è³‡æ–™å¤¾è·¯å¾‘ç‚ºç©ºæˆ–ç„¡æ•ˆã€‚", "éŒ¯èª¤", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             if (!Directory.Exists(folderPath))
             {
-                MessageBox.Show("«ü©wªº¸ê®Æ§¨¸ô®|¤£¦s¦b¡C", "¿ù»~", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("æŒ‡å®šçš„è³‡æ–™å¤¾è·¯å¾‘ä¸å­˜åœ¨ã€‚", "éŒ¯èª¤", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -143,19 +192,19 @@ namespace ReferenceConversion.Presentation
 
             if (!csprojFiles.Any())
             {
-                MessageBox.Show("¸ê®Æ§¨¤¤¨S¦³§ä¨ì .csproj ÀÉ®×¡C", "¿ù»~", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("è³‡æ–™å¤¾ä¸­æ²’æœ‰æ‰¾åˆ° .csproj æª”æ¡ˆã€‚", "éŒ¯èª¤", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            // ²M°£¤§«eªº ListBox ¶µ¥Ø
+            // æ¸…é™¤ä¹‹å‰çš„ ListBox é …ç›®
             Lb_ShowAllCsproj.Items.Clear();
 
-            // ±N©Ò¦³ .csproj ÀÉ®×¥[¤J ListBox
+            // å°‡æ‰€æœ‰ .csproj æª”æ¡ˆåŠ å…¥ ListBox
             foreach (var file in csprojFiles)
             {
-                string relativePath = Path.GetRelativePath(folderPath, file);
-                Lb_ShowAllCsproj.Items.Add(relativePath);
-            }            
+                string fullPath = Path.GetFullPath(file);
+                Lb_ShowAllCsproj.Items.Add(fullPath);
+            }
         }
 
         private void ProcessCsprojFile(string csprojfile, ref bool hasChanges, string slnFilePath, ReferenceConversionMode mode)
@@ -178,7 +227,7 @@ namespace ReferenceConversion.Presentation
                 var csprojFiles = Directory.EnumerateFiles(dir, "*.csproj", SearchOption.AllDirectories);
                 if (!csprojFiles.Any())
                 {
-                    MessageBox.Show("¸ê®Æ§¨¤¤¨S¦³§ä¨ì .csproj ÀÉ®×¡C", "¿ù»~", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("è³‡æ–™å¤¾ä¸­æ²’æœ‰æ‰¾åˆ° .csproj æª”æ¡ˆã€‚", "éŒ¯èª¤", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
                 bool hasChanges = false;
@@ -186,14 +235,50 @@ namespace ReferenceConversion.Presentation
                     ProcessCsprojFile(file, ref hasChanges, slnPath, mode);
 
                 var msg = hasChanges
-                    ? "Âà´«§¹¦¨¡C"
-                    : "¨S¦³ÀÉ®×»İ­nÂà´«¡C";
-                MessageBox.Show(msg, "°T®§", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ? "è½‰æ›å®Œæˆã€‚"
+                    : "æ²’æœ‰æª”æ¡ˆéœ€è¦è½‰æ›ã€‚";
+
+                ShowStatus(msg, isError: !hasChanges);
+            }
+        }
+
+        private void ShowStatus(string message, bool isError = false, bool useMessageBox = false)
+        {
+            Lb_Convert_Status.Text = message;
+            Lb_Convert_Status.ForeColor = isError ? Color.Red : Color.Green;
+
+            if (useMessageBox)
+            {
+                var icon = isError ? MessageBoxIcon.Warning : MessageBoxIcon.Information;
+                MessageBox.Show(message, "è¨Šæ¯", MessageBoxButtons.OK, icon);
+            }
+        }
+
+        private void Btn_ToggleLog_Click(object sender, EventArgs e)
+        {
+            Logger.IsEnabled = !Logger.IsEnabled;
+            Lb_Log_Status.Text = Logger.IsEnabled ? "Log: ON" : "Log: OFF";
+
+            Pnl_Log.Visible = !Pnl_Log.Visible;
+            int logWidth = Pnl_Log.Width;
+
+            if (Pnl_Log.Visible)
+            {
+                this.Width += logWidth;
+                Btn_Clear_Log.Visible = true;
             }
             else
             {
-                MessageBox.Show("½Ğ¥ı¿ï¾Ü .sln ÀÉ®×¡C", "¿ù»~", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Lb_Log.Items.Clear();
+                this.Width = 560;
+                Btn_Clear_Log.Visible = false;
             }
+
+        }
+
+        private void Btn_Clear_Log_Click(object sender, EventArgs e)
+        {
+            Lb_Log.Items.Clear();
         }
     }
 }

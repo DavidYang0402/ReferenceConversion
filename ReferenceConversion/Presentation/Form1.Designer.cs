@@ -32,6 +32,7 @@
             Tb_ShowPath = new TextBox();
             Lb_ShowAllCsproj = new ListBox();
             groupBox1 = new GroupBox();
+            label3 = new Label();
             Lb_Allowlist = new ListBox();
             Cbx_Project_Allowlist = new ComboBox();
             groupBox2 = new GroupBox();
@@ -42,16 +43,23 @@
             label1 = new Label();
             Tb_Ref_Path = new TextBox();
             groupBox3 = new GroupBox();
+            Lb_Convert_Status = new Label();
+            Btn_ToggleLog = new Button();
+            Lb_Log_Status = new Label();
+            Pnl_Log = new Panel();
+            Lb_Log = new ListBox();
+            Btn_Clear_Log = new Button();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox3.SuspendLayout();
+            Pnl_Log.SuspendLayout();
             SuspendLayout();
             // 
             // Btn_GetFolder
             // 
-            Btn_GetFolder.Location = new Point(478, 8);
+            Btn_GetFolder.Location = new Point(444, 196);
             Btn_GetFolder.Name = "Btn_GetFolder";
-            Btn_GetFolder.Size = new Size(85, 29);
+            Btn_GetFolder.Size = new Size(82, 29);
             Btn_GetFolder.TabIndex = 0;
             Btn_GetFolder.Text = "選取資料夾";
             Btn_GetFolder.UseVisualStyleBackColor = true;
@@ -59,9 +67,9 @@
             // 
             // Tb_ShowPath
             // 
-            Tb_ShowPath.Location = new Point(110, 11);
+            Tb_ShowPath.Location = new Point(93, 198);
             Tb_ShowPath.Name = "Tb_ShowPath";
-            Tb_ShowPath.Size = new Size(362, 23);
+            Tb_ShowPath.Size = new Size(345, 23);
             Tb_ShowPath.TabIndex = 1;
             // 
             // Lb_ShowAllCsproj
@@ -71,20 +79,30 @@
             Lb_ShowAllCsproj.ItemHeight = 15;
             Lb_ShowAllCsproj.Location = new Point(6, 51);
             Lb_ShowAllCsproj.Name = "Lb_ShowAllCsproj";
-            Lb_ShowAllCsproj.Size = new Size(522, 154);
+            Lb_ShowAllCsproj.Size = new Size(504, 154);
             Lb_ShowAllCsproj.TabIndex = 2;
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(label3);
             groupBox1.Controls.Add(Lb_Allowlist);
             groupBox1.Controls.Add(Cbx_Project_Allowlist);
-            groupBox1.Location = new Point(25, 39);
+            groupBox1.Location = new Point(8, 8);
             groupBox1.Name = "groupBox1";
             groupBox1.Padding = new Padding(5);
-            groupBox1.Size = new Size(275, 221);
+            groupBox1.Size = new Size(518, 184);
             groupBox1.TabIndex = 6;
             groupBox1.TabStop = false;
             groupBox1.Text = "專案 白名單";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(8, 22);
+            label3.Name = "label3";
+            label3.Size = new Size(79, 15);
+            label3.TabIndex = 5;
+            label3.Text = "選取白名單：";
             // 
             // Lb_Allowlist
             // 
@@ -93,15 +111,15 @@
             Lb_Allowlist.ItemHeight = 15;
             Lb_Allowlist.Location = new Point(8, 51);
             Lb_Allowlist.Name = "Lb_Allowlist";
-            Lb_Allowlist.Size = new Size(259, 154);
+            Lb_Allowlist.Size = new Size(502, 124);
             Lb_Allowlist.TabIndex = 8;
             // 
             // Cbx_Project_Allowlist
             // 
             Cbx_Project_Allowlist.FormattingEnabled = true;
-            Cbx_Project_Allowlist.Location = new Point(6, 19);
+            Cbx_Project_Allowlist.Location = new Point(120, 19);
             Cbx_Project_Allowlist.Name = "Cbx_Project_Allowlist";
-            Cbx_Project_Allowlist.Size = new Size(263, 23);
+            Cbx_Project_Allowlist.Size = new Size(294, 23);
             Cbx_Project_Allowlist.TabIndex = 7;
             Cbx_Project_Allowlist.Text = "請選取白名單專案";
             Cbx_Project_Allowlist.SelectedIndexChanged += Cbx_Project_Allowlist_SelectedIndexChanged;
@@ -111,10 +129,10 @@
             groupBox2.Controls.Add(Cbx_solution_file);
             groupBox2.Controls.Add(label2);
             groupBox2.Controls.Add(Lb_ShowAllCsproj);
-            groupBox2.Location = new Point(306, 39);
+            groupBox2.Location = new Point(8, 227);
             groupBox2.Name = "groupBox2";
             groupBox2.Padding = new Padding(5);
-            groupBox2.Size = new Size(538, 221);
+            groupBox2.Size = new Size(518, 212);
             groupBox2.TabIndex = 7;
             groupBox2.TabStop = false;
             groupBox2.Text = "目前所有 csproj 檔案";
@@ -124,7 +142,7 @@
             Cbx_solution_file.FormattingEnabled = true;
             Cbx_solution_file.Location = new Point(120, 19);
             Cbx_solution_file.Name = "Cbx_solution_file";
-            Cbx_solution_file.Size = new Size(406, 23);
+            Cbx_solution_file.Size = new Size(294, 23);
             Cbx_solution_file.TabIndex = 4;
             Cbx_solution_file.Text = "請選取 Solution File";
             Cbx_solution_file.SelectedIndexChanged += Cbx_solution_file_SelectedIndexChanged;
@@ -140,9 +158,9 @@
             // 
             // Btn_ToReference
             // 
-            Btn_ToReference.Location = new Point(438, 289);
+            Btn_ToReference.Location = new Point(8, 508);
             Btn_ToReference.Name = "Btn_ToReference";
-            Btn_ToReference.Size = new Size(200, 50);
+            Btn_ToReference.Size = new Size(160, 40);
             Btn_ToReference.TabIndex = 8;
             Btn_ToReference.Text = "轉成 檔案參考";
             Btn_ToReference.UseVisualStyleBackColor = true;
@@ -150,9 +168,9 @@
             // 
             // Btn_ToProjectReference
             // 
-            Btn_ToProjectReference.Location = new Point(644, 289);
+            Btn_ToProjectReference.Location = new Point(174, 507);
             Btn_ToProjectReference.Name = "Btn_ToProjectReference";
-            Btn_ToProjectReference.Size = new Size(200, 50);
+            Btn_ToProjectReference.Size = new Size(160, 40);
             Btn_ToProjectReference.TabIndex = 9;
             Btn_ToProjectReference.Text = "轉成 專案參考";
             Btn_ToProjectReference.UseVisualStyleBackColor = true;
@@ -161,7 +179,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(25, 15);
+            label1.Location = new Point(8, 203);
             label1.Name = "label1";
             label1.Size = new Size(79, 15);
             label1.TabIndex = 10;
@@ -174,43 +192,107 @@
             Tb_Ref_Path.Name = "Tb_Ref_Path";
             Tb_Ref_Path.PlaceholderText = "DLL 預設路徑";
             Tb_Ref_Path.ReadOnly = true;
-            Tb_Ref_Path.Size = new Size(385, 23);
+            Tb_Ref_Path.Size = new Size(504, 23);
             Tb_Ref_Path.TabIndex = 12;
             // 
             // groupBox3
             // 
             groupBox3.Controls.Add(Tb_Ref_Path);
-            groupBox3.Location = new Point(25, 283);
+            groupBox3.Location = new Point(8, 445);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(397, 56);
+            groupBox3.Size = new Size(518, 56);
             groupBox3.TabIndex = 13;
             groupBox3.TabStop = false;
             groupBox3.Text = "DLL 預設路徑：";
+            // 
+            // Lb_Convert_Status
+            // 
+            Lb_Convert_Status.AutoSize = true;
+            Lb_Convert_Status.Location = new Point(8, 551);
+            Lb_Convert_Status.Name = "Lb_Convert_Status";
+            Lb_Convert_Status.Size = new Size(55, 15);
+            Lb_Convert_Status.TabIndex = 14;
+            Lb_Convert_Status.Text = "轉換狀態";
+            // 
+            // Btn_ToggleLog
+            // 
+            Btn_ToggleLog.Location = new Point(380, 507);
+            Btn_ToggleLog.Name = "Btn_ToggleLog";
+            Btn_ToggleLog.Size = new Size(75, 23);
+            Btn_ToggleLog.TabIndex = 15;
+            Btn_ToggleLog.Text = "Log";
+            Btn_ToggleLog.UseVisualStyleBackColor = true;
+            Btn_ToggleLog.Click += Btn_ToggleLog_Click;
+            // 
+            // Lb_Log_Status
+            // 
+            Lb_Log_Status.AutoSize = true;
+            Lb_Log_Status.Location = new Point(461, 511);
+            Lb_Log_Status.Name = "Lb_Log_Status";
+            Lb_Log_Status.Size = new Size(57, 15);
+            Lb_Log_Status.TabIndex = 16;
+            Lb_Log_Status.Text = "Log: OFF";
+            // 
+            // Pnl_Log
+            // 
+            Pnl_Log.Controls.Add(Lb_Log);
+            Pnl_Log.Location = new Point(532, 8);
+            Pnl_Log.Name = "Pnl_Log";
+            Pnl_Log.Size = new Size(824, 551);
+            Pnl_Log.TabIndex = 17;
+            // 
+            // Lb_Log
+            // 
+            Lb_Log.FormattingEnabled = true;
+            Lb_Log.HorizontalScrollbar = true;
+            Lb_Log.ItemHeight = 15;
+            Lb_Log.Location = new Point(1, 8);
+            Lb_Log.Name = "Lb_Log";
+            Lb_Log.ScrollAlwaysVisible = true;
+            Lb_Log.Size = new Size(800, 529);
+            Lb_Log.TabIndex = 0;
+            // 
+            // Btn_Clear_Log
+            // 
+            Btn_Clear_Log.Location = new Point(380, 536);
+            Btn_Clear_Log.Name = "Btn_Clear_Log";
+            Btn_Clear_Log.Size = new Size(75, 23);
+            Btn_Clear_Log.TabIndex = 18;
+            Btn_Clear_Log.Text = "清除 Log";
+            Btn_Clear_Log.UseVisualStyleBackColor = true;
+            Btn_Clear_Log.Click += Btn_Clear_Log_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(864, 353);
-            Controls.Add(groupBox3);
+            ClientSize = new Size(1364, 571);
+            Controls.Add(Btn_Clear_Log);
+            Controls.Add(Pnl_Log);
+            Controls.Add(Lb_Log_Status);
+            Controls.Add(Btn_ToggleLog);
+            Controls.Add(Lb_Convert_Status);
+            Controls.Add(Btn_GetFolder);
+            Controls.Add(Tb_ShowPath);
             Controls.Add(label1);
+            Controls.Add(groupBox3);
             Controls.Add(Btn_ToProjectReference);
             Controls.Add(Btn_ToReference);
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
-            Controls.Add(Tb_ShowPath);
-            Controls.Add(Btn_GetFolder);
-            MaximumSize = new Size(1000, 1000);
-            MinimumSize = new Size(880, 380);
+            MaximumSize = new Size(1380, 610);
+            MinimumSize = new Size(560, 610);
             Name = "Form1";
             Padding = new Padding(5);
             Text = "Reference Convert";
             Load += Form1_Load;
             groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
             groupBox3.ResumeLayout(false);
             groupBox3.PerformLayout();
+            Pnl_Log.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -231,5 +313,12 @@
         private Label label2;
         private TextBox Tb_Ref_Path;
         private GroupBox groupBox3;
+        private Label Lb_Convert_Status;
+        private Button Btn_ToggleLog;
+        private Label Lb_Log_Status;
+        private Label label3;
+        private Panel Pnl_Log;
+        private ListBox Lb_Log;
+        private Button Btn_Clear_Log;
     }
 }

@@ -71,6 +71,41 @@
           "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
         }
       ]
+    },
+    {
+      "projectname": "TMFrame",
+      "projectguid": "{9A19103F-16F7-4668-BE54-9A1E7A4F7556}",
+      "dllpath": "TMFrame\\Libs\\",
+      "Allowlist": [
+        {
+          "name": "DataTableExportCore",
+          "version": "1.0.0.0",
+          "guid": "{8CFD24D7-FC07-4399-9982-C507E04D446E}",
+          "path": "ShareCore\\trunk\\DataTableExportCore\\DataTableExportCore.csproj",
+          "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
+        },
+        {
+          "name": "ExcelHelper.ReportNPOICore",
+          "version": "1.0.0.0",
+          "guid": "{A4BB32C5-2669-4838-8B0B-1713FD9F9E5F}",
+          "path": "ShareCore\\trunk\\ExcelHelper.ReportNPOICore\\ExcelHelper.ReportNPOICore.csproj",
+          "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
+        },
+        {
+          "name": "ShareFuncCore",
+          "version": "1.0.0.0",
+          "guid": "{0B068534-AF5A-48C9-93FB-4FA34E09D4F3}",
+          "path": "ShareCore\\trunk\\ShareFuncCore\\ShareFuncCore.csproj",
+          "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
+        },
+        {
+          "name": "ShareFuncCore.Base",
+          "version": "1.0.0.0",
+          "guid": "{F3955574-9EFF-4DB8-B30B-B5225C893743}",
+          "path": "ShareCore\\trunk\\ShareFuncCore.Base\\ShareFuncCore.Base.csproj",
+          "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
+        }
+      ]
     }
   ]
 }

@@ -24,28 +24,59 @@ namespace ReferenceConversion.Infrastructure.Services
 
             Logger.LogDebug($"專案所在目錄：{slnDir}");
 
-            var firstDir = GetShareCoreRootFromAllowlistPath(refPath);
-
-            string? shareCoreDir = FindDirectoryUpwards(slnDir, firstDir);
-
-            if (shareCoreDir == null)
+            string firstDir = GetTopLevelDirectoryFromRelativePath(refPath);
+            string? rootSearchDir = FindDirectoryUpwards(slnDir, firstDir);
+            if (rootSearchDir == null)
             {
                 Logger.LogError($"無法從 sln 路徑向上找到 '{firstDir}' 目錄");
                 return;
             }
+            Logger.LogInfo($"找到 {firstDir} 目錄：{rootSearchDir}");
 
-            Logger.LogInfo($"找到 ShareCore 目錄：{shareCoreDir}");
+            string? refDir = Directory.EnumerateDirectories(rootSearchDir, "*", SearchOption.AllDirectories)
+                .FirstOrDefault(d => string.Equals(Path.GetFileName(d), refName, StringComparison.OrdinalIgnoreCase));
 
-            string? dllFile = Directory.EnumerateFiles(shareCoreDir, $"{refName}.dll", SearchOption.AllDirectories)
-                .FirstOrDefault();
-
-            if (dllFile == null)
+            if (refDir == null)
             {
-                Logger.LogWarning($"找不到 {refName} 的 DLL（{refName}.dll），略過");
+                Logger.LogWarning($"在 {rootSearchDir} 下找不到名為 {refName} 的資料夾，略過");
                 return;
             }
 
-            Logger.LogDebug($"DLL 路徑：{dllFile}");
+            // 找 bin 目錄
+            string? binDir = Directory.EnumerateDirectories(refDir, "bin", SearchOption.AllDirectories)
+                .FirstOrDefault();
+
+            if (binDir == null)
+            {
+                Logger.LogWarning($"在 {refDir} 下找不到 bin 資料夾，略過");
+                return;
+            }
+
+            // 找 bin 裡面的 Debug 資料夾（不含 Release）
+            string? debugDir = Directory.EnumerateDirectories(binDir, "Debug", SearchOption.AllDirectories)
+                .FirstOrDefault();
+
+            if (debugDir == null)
+            {
+                Logger.LogWarning($"在 {binDir} 下找不到 Debug 資料夾，略過");
+                return;
+            }
+
+            var allDlls = Directory.EnumerateFiles(debugDir, $"{refName}.dll", SearchOption.AllDirectories)
+                .Select(path => new FileInfo(path))
+                .ToList();
+
+            if (allDlls.Count == 0)
+            {
+                Logger.LogWarning($"在 {debugDir} 找不到任何 {refName}.dll，略過");
+                return;
+            }
+
+            // 按照「最後寫入時間」排序，選最新的那個
+            var latestDll = allDlls.OrderByDescending(f => f.LastWriteTime).First();
+            string dllFile = latestDll.FullName;
+
+            Logger.LogInfo($"選擇最新的 {refName}.dll，路徑：{dllFile}，最後修改時間：{latestDll.LastWriteTime}");
 
             string libsTargetDirFull;
 
@@ -82,19 +113,27 @@ namespace ReferenceConversion.Infrastructure.Services
             }
 
             string targetPath = Path.Combine(libsTargetDirFull, Path.GetFileName(dllFile));
+            if (File.Exists(targetPath) &&
+                File.GetLastWriteTime(targetPath) >= File.GetLastWriteTime(dllFile))
+            {
+                Logger.LogInfo($"{refName}.dll 已經是最新版本，略過複製");
+                return;
+            }
+
             try
             {
                 Logger.LogInfo($"複製 {refName}.dll 到 {targetPath}");
                 File.Copy(dllFile, targetPath, overwrite: true);
-                Logger.LogSuccess($"{refName}.dll 複製成功\n");
+                File.SetLastWriteTime(targetPath, File.GetLastWriteTime(dllFile));
+                Logger.LogSuccess($"{refName}.dll 複製成功");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"複製失敗：{ex.Message}\n", ex);
+                Logger.LogError($"複製失敗：{ex.Message}", ex);
             }
         }
 
-        public string? GetShareCoreRootFromAllowlistPath(string allowlistRelativePath)
+        public string GetTopLevelDirectoryFromRelativePath(string allowlistRelativePath)
         {
             // 抓出 allowlist 裡面 path 的第一層目錄
             string firstDir = allowlistRelativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];

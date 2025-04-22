@@ -11,6 +11,7 @@ using ReferenceConversion.Domain.Enum;
 using ReferenceConversion.Domain.Interfaces;
 using ReferenceConversion.Infrastructure.Services;
 using ReferenceConversion.Modifier;
+using ReferenceConversion.Shared;
 
 namespace ReferenceConversion.Applications.Services
 {
@@ -36,16 +37,24 @@ namespace ReferenceConversion.Applications.Services
             var nodesToRemove = new List<XmlNode>();
             var slnModifier = _slnModifierFactory(slnFilePath);
 
+            Logger.LogInfo($"開始處理 SLN 檔案: {slnFilePath}, 進行轉成專案參考");
+
+            Logger.LogSeparator();
+
             foreach (XmlNode node in referenceNodes)
             {
                 if (node.Attributes?["Include"] is not XmlAttribute includeAttr) continue;
                 string referenceName = Path.GetFileNameWithoutExtension(includeAttr.Value);
                 if (string.IsNullOrEmpty(referenceName) || processedReferences.Contains(referenceName)) continue;
 
+                Logger.LogInfo($"處理 ProjectReference: {referenceName}");
+
                 if (_allowlistManager.IsInAllowlist(referenceName, out var project, out var entry))
                 {
+                    Logger.LogInfo($"找到允許的專案: {entry.Name}, 將轉換為 DLL");
+
                     var newElement = xmlDoc.CreateElement("Reference");
-                    string dllPath = Path.Combine(project.DllPath, $"{referenceName}.dll");
+                    string dllPath = Path.Combine("..", project.DllPath, $"{referenceName}.dll");
 
                     newElement.SetAttribute("Include", $"{entry.Name}, Version={entry.Version}, Culture=neutral, processorArchitecture=MSIL");
 
@@ -64,9 +73,15 @@ namespace ReferenceConversion.Applications.Services
                     processedReferences.Add(referenceName);
                     isChanged = true;
 
+                    // Log DLL 複製
+                    Logger.LogInfo($"開始複製 DLL: {referenceName}.dll 到 {dllPath}");
                     _dllCopier.Copy(slnFilePath, referenceName, project.DllPath, entry.Path);
+
+                    Logger.LogSeparator();
                 }
             }
+            Logger.LogInfo($"結束處理 SLN 檔案: {slnFilePath}"); 
+            Logger.LogSeparator();
 
             foreach (XmlNode node in nodesToRemove)
                 node.ParentNode?.RemoveChild(node);
