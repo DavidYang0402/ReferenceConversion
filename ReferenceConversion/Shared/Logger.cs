@@ -125,5 +125,10 @@ namespace ReferenceConversion.Shared
             LogToUI?.Invoke(separator);
         }
 
+        public static string GetLogDirectory()
+        {
+            return _logDir;
+        }
+
     }
 }

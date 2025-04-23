@@ -23,7 +23,9 @@ namespace ReferenceConversion.Presentation
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.Width = 560;
+            this.Width = 550;
+            Lb_Log_Path.Text = 
+                $"Log 檔存放路徑: {Path.Combine(@"C:\Reference_Covert_Logs", $"log_{DateTime.Now:yyyyMMdd}.txt")}";
 
             _allowlistManager.LoadProject();
             LoadProjectNamesToComboBox();
@@ -235,7 +237,9 @@ namespace ReferenceConversion.Presentation
                     ProcessCsprojFile(file, ref hasChanges, slnPath, mode);
 
                 var msg = hasChanges
-                    ? "轉換完成。"
+                    ? (mode == ReferenceConversionMode.ProjectToDll)
+                        ? "已完成轉換為 檔案參考"
+                        : "已完成轉換為 專案參考"
                     : "沒有檔案需要轉換。";
 
                 ShowStatus(msg, isError: !hasChanges);
@@ -257,20 +261,20 @@ namespace ReferenceConversion.Presentation
         private void Btn_ToggleLog_Click(object sender, EventArgs e)
         {
             Logger.IsEnabled = !Logger.IsEnabled;
-            Lb_Log_Status.Text = Logger.IsEnabled ? "Log: ON" : "Log: OFF";
+            Lb_Log_Status.Text = Logger.IsEnabled ? "Log: 開啟" : "Log: 關閉";
 
             Pnl_Log.Visible = !Pnl_Log.Visible;
             int logWidth = Pnl_Log.Width;
 
             if (Pnl_Log.Visible)
             {
-                this.Width += logWidth;
+                this.Width = 1380;
                 Btn_Clear_Log.Visible = true;
             }
             else
             {
                 Lb_Log.Items.Clear();
-                this.Width = 560;
+                this.Width = 550;
                 Btn_Clear_Log.Visible = false;
             }
 

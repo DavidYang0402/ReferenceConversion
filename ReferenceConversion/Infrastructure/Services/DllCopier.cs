@@ -25,7 +25,9 @@ namespace ReferenceConversion.Infrastructure.Services
             Logger.LogDebug($"專案所在目錄：{slnDir}");
 
             string firstDir = GetTopLevelDirectoryFromRelativePath(refPath);
+
             string? rootSearchDir = FindDirectoryUpwards(slnDir, firstDir);
+
             if (rootSearchDir == null)
             {
                 Logger.LogError($"無法從 sln 路徑向上找到 '{firstDir}' 目錄");
@@ -34,7 +36,8 @@ namespace ReferenceConversion.Infrastructure.Services
             Logger.LogInfo($"找到 {firstDir} 目錄：{rootSearchDir}");
 
             string? refDir = Directory.EnumerateDirectories(rootSearchDir, "*", SearchOption.AllDirectories)
-                .FirstOrDefault(d => string.Equals(Path.GetFileName(d), refName, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(d => string.Equals(new DirectoryInfo(d).Name, refName, StringComparison.OrdinalIgnoreCase));
+
 
             if (refDir == null)
             {
@@ -42,25 +45,17 @@ namespace ReferenceConversion.Infrastructure.Services
                 return;
             }
 
-            // 找 bin 目錄
-            string? binDir = Directory.EnumerateDirectories(refDir, "bin", SearchOption.AllDirectories)
-                .FirstOrDefault();
-
-            if (binDir == null)
-            {
-                Logger.LogWarning($"在 {refDir} 下找不到 bin 資料夾，略過");
-                return;
-            }
-
-            // 找 bin 裡面的 Debug 資料夾（不含 Release）
-            string? debugDir = Directory.EnumerateDirectories(binDir, "Debug", SearchOption.AllDirectories)
-                .FirstOrDefault();
+            // 找 \bin\Debug\ 資料夾
+            string? debugDir = Directory.EnumerateDirectories(refDir, "*", SearchOption.AllDirectories)
+                .FirstOrDefault(path =>
+                    path.EndsWith(Path.Combine("bin", "Debug"), StringComparison.OrdinalIgnoreCase));
 
             if (debugDir == null)
             {
-                Logger.LogWarning($"在 {binDir} 下找不到 Debug 資料夾，略過");
+                Logger.LogWarning($"在 {refDir} 下找不到 Debug 資料夾，略過");
                 return;
             }
+
 
             var allDlls = Directory.EnumerateFiles(debugDir, $"{refName}.dll", SearchOption.AllDirectories)
                 .Select(path => new FileInfo(path))
@@ -129,18 +124,23 @@ namespace ReferenceConversion.Infrastructure.Services
             }
             catch (Exception ex)
             {
-                Logger.LogError($"複製失敗：{ex.Message}", ex);
+                Logger.LogError($"複製失敗：{ex.Message}\n詳細錯誤：{ex}", ex);
             }
-        }
+        }        
 
         public string GetTopLevelDirectoryFromRelativePath(string allowlistRelativePath)
         {
             // 抓出 allowlist 裡面 path 的第一層目錄
-            string firstDir = allowlistRelativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
 
-            return firstDir;
+            if (string.IsNullOrWhiteSpace(allowlistRelativePath))
+                throw new ArgumentException("refPath 為空或無效", nameof(allowlistRelativePath));
+
+            string[] parts = allowlistRelativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (parts.Length == 0 || string.IsNullOrWhiteSpace(parts[0]))
+                throw new InvalidOperationException("無法從 refPath 擷取第一層目錄");
+
+            return parts[0];
         }
-
 
         private string? FindLibsInSiblingProject(string slnDir)
         {
@@ -174,10 +174,14 @@ namespace ReferenceConversion.Infrastructure.Services
 
             while (dir != null)
             {
-                if (dir.GetDirectories(targetFolderName).Any())
+                var match = dir.GetDirectories()
+                    .FirstOrDefault(d => string.Equals(d.Name, targetFolderName, StringComparison.OrdinalIgnoreCase));
+
+                if (match != null)
                 {
-                    return Path.Combine(dir.FullName, targetFolderName);
+                    return match.FullName;
                 }
+
                 dir = dir.Parent;
             }
 
