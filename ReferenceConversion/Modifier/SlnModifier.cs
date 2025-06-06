@@ -37,7 +37,8 @@ namespace ReferenceConversion.Modifier
                     return;
                 }
 
-                if (!ProjectConfigExists(slnContent, refGuid) && !string.IsNullOrEmpty(parentGuid))
+                //if (!ProjectConfigExists(slnContent, refGuid) && !string.IsNullOrEmpty(parentGuid))
+                if (!ProjectConfigExists(slnContent, refGuid))
                 {
                     InsertProjectConfig(ref slnContent, refGuid);
                 }

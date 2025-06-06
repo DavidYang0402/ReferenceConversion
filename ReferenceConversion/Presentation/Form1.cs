@@ -153,14 +153,49 @@ namespace ReferenceConversion.Presentation
         {
             string? foundPath = null;
 
+            //foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed))
+            //{
+            //    string possiblePath = Path.Combine(drive.RootDirectory.FullName, "WorkProjects", projectName);
+
+            //    if (Directory.Exists(possiblePath))
+            //    {
+            //        foundPath = possiblePath;
+            //        break;
+            //    }
+            //}
+
             foreach (var drive in DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed))
             {
-                string possiblePath = Path.Combine(drive.RootDirectory.FullName, "WorkProjects", projectName);
-
-                if (Directory.Exists(possiblePath))
+                try
                 {
-                    foundPath = possiblePath;
-                    break;
+                    string basePath = Path.Combine(drive.RootDirectory.FullName, "WorkProjects");
+                    string exactPath = Path.Combine(basePath, projectName);
+
+                    //精確匹配
+                    if (Directory.Exists(exactPath))
+                    {
+                        foundPath = exactPath;
+                        break;
+                    }
+
+                    //沒找到 => 開始模糊匹配
+                    if (Directory.Exists(basePath))
+                    {
+                        var similarDirs = Directory.GetDirectories(basePath)
+                            .Where(dir => Path.GetFileName(dir).Contains(projectName, StringComparison.OrdinalIgnoreCase))
+                            .ToList();
+
+                        if (similarDirs.Any())
+                        {
+                            foundPath = similarDirs.First(); // 你也可以列出所有結果讓使用者選
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 防止某些磁碟沒權限或爆炸
+                    Console.WriteLine($"Error accessing {drive.Name}: {ex.Message}");
                 }
             }
 

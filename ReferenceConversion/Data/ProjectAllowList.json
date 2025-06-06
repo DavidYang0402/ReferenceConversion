@@ -106,6 +106,43 @@
           "parent_guid": "{3281AD17-407E-433A-B9DE-26001359BD96}"
         }
       ]
+    },
+    {
+      "projectname": "TCLN",
+      "projectguid": "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+      "dllpath": "TCLN\\App_Data\\",
+      "Allowlist": [
+        {
+          "name": "ExcelHelper.Ext",
+          "version": "1.0.0.0",
+          "guid": "{B07CBE3A-2130-404D-95D7-3767A4FE9FA6}",
+          "path": "SysTools\\ExcelHelper.Ext\\ExcelHelper.Ext\\ExcelHelper.Ext.csproj"
+        },
+        {
+          "name": "ExcelHelper.Report",
+          "version": "1.0.0.0",
+          "guid": "{FDD603B6-8B8E-4A51-BD21-4952CAC6781}",
+          "path": "SysTools\\ExcelHelper.Report\\ExcelHelper.Report.csproj"
+        },
+        {
+          "name": "ShareFunc.Base",
+          "version": "1.0.0.0",
+          "guid": "{7D91DCA0-A123-404E-92B9-13B22383FCEA}",
+          "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareFunc.Base\\ShareFunc.Base.csproj"
+        },
+        {
+          "name": "ShareFunc",
+          "version": "1.0.0.0",
+          "guid": "{47F55D99-CFB5-4F67-93A2-38BF9F3DFC06}",
+          "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareFunc\\ShareFunc.csproj"
+        },
+        {
+          "name": "ShareWebCtrl",
+          "version": "1.0.0.0",
+          "guid": "{DC91CF90-0C17-4729-B2D8-405C08E9D8DB}",
+          "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareWebCtrl\\ShareWebCtrl.csproj"
+        }
+      ]
     }
   ]
 }
