@@ -126,12 +126,11 @@ namespace ReferenceConversion.Infrastructure.Services
             {
                 Logger.LogError($"複製失敗：{ex.Message}\n詳細錯誤：{ex}", ex);
             }
-        }        
+        }
 
         public string GetTopLevelDirectoryFromRelativePath(string allowlistRelativePath)
         {
             // 抓出 allowlist 裡面 path 的第一層目錄
-
             if (string.IsNullOrWhiteSpace(allowlistRelativePath))
                 throw new ArgumentException("refPath 為空或無效", nameof(allowlistRelativePath));
 
@@ -141,6 +140,23 @@ namespace ReferenceConversion.Infrastructure.Services
 
             return parts[0];
         }
+
+        //取出 .csproj 路徑中的專案資料夾路徑
+        public string GetProjectDirectoryFromCsprojPath(string allowlistPath)
+        {
+            if (string.IsNullOrWhiteSpace(allowlistPath))
+                throw new ArgumentException("path 為空或無效", nameof(allowlistPath));
+
+            if (!allowlistPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("path 必須是以 .csproj 結尾的專案路徑");
+
+            string directoryPath = Path.GetDirectoryName(allowlistPath);
+            if (string.IsNullOrWhiteSpace(directoryPath))
+                throw new InvalidOperationException("無法從 path 擷取專案資料夾路徑");
+
+            return directoryPath;
+        }
+
 
         private string? FindLibsInSiblingProject(string slnDir)
         {
