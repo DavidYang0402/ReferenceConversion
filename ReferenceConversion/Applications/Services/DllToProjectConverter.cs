@@ -26,7 +26,7 @@ namespace ReferenceConversion.Applications.Services
             _slnModifierFactory = slnModifierFactory;
         }
 
-        public bool Convert(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath)
+        public bool Convert(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string csprojPath)
         {
             bool isChanged = false;
             var referenceNodes = xmlDoc.GetElementsByTagName("Reference").Cast<XmlNode>().ToList();
@@ -48,6 +48,14 @@ namespace ReferenceConversion.Applications.Services
                     Logger.LogInfo($"找到允許的專案: {entry.Name}, 將轉換為 DLL");
 
                     string relativePath = Path.Combine("..", "..", "..", entry.Path);
+
+                    string csprojProjectName = Path.GetFileNameWithoutExtension(csprojPath);
+
+                    if (csprojProjectName == "ShareUserCtrl")
+                    {
+                        relativePath = Path.Combine("..", "..", "..", "..", entry.Path);
+                    }
+
                     var newElement = xmlDoc.CreateElement("ProjectReference");
                     newElement.SetAttribute("Include", relativePath);
 

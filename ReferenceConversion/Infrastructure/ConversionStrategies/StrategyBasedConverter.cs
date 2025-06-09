@@ -30,9 +30,9 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
             return _strategies[ReferenceConversionMode.ProjectToDll].Convert(xmlDoc, processed, slnFilePath);
         }
 
-        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processed, string slnFilePath)
+        public bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processed, string slnFilePath, string csprojPath)
         {
-            return _strategies[ReferenceConversionMode.DllToProject].Convert(xmlDoc, processed, slnFilePath);
+            return _strategies[ReferenceConversionMode.DllToProject].Convert(xmlDoc, processed, slnFilePath, csprojPath);
         }
     }
 }

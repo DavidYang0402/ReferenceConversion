@@ -30,7 +30,7 @@ namespace ReferenceConversion.Applications.Services
             _dllCopier = dllCopier;
         }
 
-        public bool Convert(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath)
+        public bool Convert(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string csprojPath)
         {
             bool isChanged = false;
             var referenceNodes = xmlDoc.GetElementsByTagName("ProjectReference").Cast<XmlNode>().ToList();

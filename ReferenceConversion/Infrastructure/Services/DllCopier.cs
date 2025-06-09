@@ -28,6 +28,7 @@ namespace ReferenceConversion.Infrastructure.Services
 
             string? rootSearchDir = FindDirectoryUpwards(slnDir, firstDir);
 
+
             if (rootSearchDir == null)
             {
                 Logger.LogError($"無法從 sln 路徑向上找到 '{firstDir}' 目錄");
@@ -35,24 +36,28 @@ namespace ReferenceConversion.Infrastructure.Services
             }
             Logger.LogInfo($"找到 {firstDir} 目錄：{rootSearchDir}");
 
-            string? refDir = Directory.EnumerateDirectories(rootSearchDir, "*", SearchOption.AllDirectories)
-                .FirstOrDefault(d => string.Equals(new DirectoryInfo(d).Name, refName, StringComparison.OrdinalIgnoreCase));
+            string projectSubDir = GetProjectDirectoryFromCsprojPath(refPath);
+
+            string fullDLLDir = Path.Combine(rootSearchDir, Path.GetRelativePath(firstDir, projectSubDir));
+
+            //string? refDir = Directory.EnumerateDirectories(rootSearchDir, "*", SearchOption.AllDirectories)
+            //    .FirstOrDefault(d => string.Equals(new DirectoryInfo(d).Name, refName, StringComparison.OrdinalIgnoreCase));
 
 
-            if (refDir == null)
+            if (fullDLLDir == null)
             {
                 Logger.LogWarning($"在 {rootSearchDir} 下找不到名為 {refName} 的資料夾，略過");
                 return;
             }
 
             // 找 \bin\Debug\ 資料夾
-            string? debugDir = Directory.EnumerateDirectories(refDir, "*", SearchOption.AllDirectories)
+            string? debugDir = Directory.EnumerateDirectories(fullDLLDir, "*", SearchOption.AllDirectories)
                 .FirstOrDefault(path =>
                     path.EndsWith(Path.Combine("bin", "Debug"), StringComparison.OrdinalIgnoreCase));
 
             if (debugDir == null)
             {
-                Logger.LogWarning($"在 {refDir} 下找不到 Debug 資料夾，略過");
+                Logger.LogWarning($"在 {fullDLLDir} 下找不到 Debug 資料夾，略過");
                 return;
             }
 
@@ -146,9 +151,6 @@ namespace ReferenceConversion.Infrastructure.Services
         {
             if (string.IsNullOrWhiteSpace(allowlistPath))
                 throw new ArgumentException("path 為空或無效", nameof(allowlistPath));
-
-            if (!allowlistPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("path 必須是以 .csproj 結尾的專案路徑");
 
             string directoryPath = Path.GetDirectoryName(allowlistPath);
             if (string.IsNullOrWhiteSpace(directoryPath))

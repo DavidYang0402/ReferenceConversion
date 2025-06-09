@@ -11,6 +11,8 @@ namespace ReferenceConversion.Applications.Interfaces
     public interface IReferenceConversionStrategy
     {
         ReferenceConversionMode Mode { get; }
-        bool Convert(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath);
+        bool Convert(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath)
+            => Convert(xmlDoc, processedReferences, slnFilePath, null);
+        bool Convert(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string? csprojPath);
     }
 }

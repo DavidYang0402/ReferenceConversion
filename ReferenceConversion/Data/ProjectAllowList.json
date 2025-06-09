@@ -121,20 +121,20 @@
         {
           "name": "ExcelHelper.Report",
           "version": "1.0.0.0",
-          "guid": "{FDD603B6-8B8E-4A51-BD21-4952CAC6781}",
+          "guid": "{FDD603B6-8B8E-4A51-BD21-4952CAC67813}",
           "path": "SysTools\\ExcelHelper.Report\\ExcelHelper.Report.csproj"
-        },
-        {
-          "name": "ShareFunc.Base",
-          "version": "1.0.0.0",
-          "guid": "{7D91DCA0-A123-404E-92B9-13B22383FCEA}",
-          "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareFunc.Base\\ShareFunc.Base.csproj"
         },
         {
           "name": "ShareFunc",
           "version": "1.0.0.0",
           "guid": "{47F55D99-CFB5-4F67-93A2-38BF9F3DFC06}",
           "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareFunc\\ShareFunc.csproj"
+        },
+        {
+          "name": "ShareFunc.Base",
+          "version": "1.0.0.0",
+          "guid": "{7D91DCA0-A123-404E-92B9-13B22383FCEA}",
+          "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareFunc.Base\\ShareFunc.Base.csproj"
         },
         {
           "name": "ShareWebCtrl",
