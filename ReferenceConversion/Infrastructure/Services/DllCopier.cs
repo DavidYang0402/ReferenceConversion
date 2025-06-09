@@ -1,11 +1,12 @@
-﻿using System;
+﻿using ReferenceConversion.Domain.Interfaces;
+using ReferenceConversion.Shared;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ReferenceConversion.Domain.Interfaces;
-using ReferenceConversion.Shared;
 
 namespace ReferenceConversion.Infrastructure.Services
 {
@@ -53,12 +54,13 @@ namespace ReferenceConversion.Infrastructure.Services
             // 找 \bin\Debug\ 資料夾
             string? debugDir = Directory.EnumerateDirectories(fullDLLDir, "*", SearchOption.AllDirectories)
                 .FirstOrDefault(path =>
-                    path.EndsWith(Path.Combine("bin", "Debug"), StringComparison.OrdinalIgnoreCase));
+                    path.EndsWith(Path.Combine("bin", "Debug"), StringComparison.OrdinalIgnoreCase) ||
+                    path.EndsWith("bin", StringComparison.OrdinalIgnoreCase));
 
             if (debugDir == null)
             {
-                Logger.LogWarning($"在 {fullDLLDir} 下找不到 Debug 資料夾，略過");
-                return;
+               Logger.LogWarning($"在 {fullDLLDir} 下找不到 Debug 資料夾，略過");
+                    return;
             }
 
 
