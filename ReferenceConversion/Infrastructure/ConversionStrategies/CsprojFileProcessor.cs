@@ -44,7 +44,7 @@ namespace ReferenceConversion.Infrastructure.ConversionStrategies
                 switch (mode)
                 {
                     case ReferenceConversionMode.ProjectToDll:
-                        isChanged |= _converter.ConvertProjectReferenceToReference(xmlDoc, processed, slnFilePath);
+                        isChanged |= _converter.ConvertProjectReferenceToReference(xmlDoc, processed, slnFilePath, csprojFile);
                         break;
                     case ReferenceConversionMode.DllToProject:
                         isChanged |= _converter.ConvertReferenceToProjectReference(xmlDoc, processed, slnFilePath, csprojFile);

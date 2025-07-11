@@ -54,7 +54,15 @@ namespace ReferenceConversion.Applications.Services
                     Logger.LogInfo($"找到允許的專案: {entry.Name}, 將轉換為 DLL");
 
                     var newElement = xmlDoc.CreateElement("Reference");
+
                     string dllPath = Path.Combine("..", project.DllPath, $"{referenceName}.dll");
+
+                    string csprojProjectName = Path.GetFileNameWithoutExtension(csprojPath);
+                    if (csprojProjectName == "ShareUserCtrl")
+                    {
+                        dllPath = Path.Combine("..", "..", entry.Path);
+                    }
+
 
                     newElement.SetAttribute("Include", $"{entry.Name}, Version={entry.Version}, Culture=neutral, processorArchitecture=MSIL");
 

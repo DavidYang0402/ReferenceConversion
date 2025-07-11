@@ -79,9 +79,42 @@ namespace ReferenceConversion.Presentation
 
         private void LoadSolutionToComboBox(string baseDirectory)
         {
-            //嘗試找出 trunk 資料夾（大小寫不拘）
-            var trunkPath = Directory.EnumerateDirectories(baseDirectory)
-                                     .FirstOrDefault(d => Path.GetFileName(d).Equals("trunk", StringComparison.OrdinalIgnoreCase));
+            string? trunkPath = null;
+
+            // 情況1: 選擇的路徑本身就是trunk
+            if (Path.GetFileName(baseDirectory).Equals("trunk", StringComparison.OrdinalIgnoreCase))
+            {
+                trunkPath = baseDirectory;
+            }
+            // 情況2: 在選擇的路徑下直接尋找trunk
+            else
+            {
+                trunkPath = Directory.EnumerateDirectories(baseDirectory)
+                                    .FirstOrDefault(d => Path.GetFileName(d).Equals("trunk", StringComparison.OrdinalIgnoreCase));
+
+                // 情況3: 更深層次尋找trunk (例如在WorkProjects下找  XXX專案名/trunk)
+                if (trunkPath == null)
+                {
+                    try
+                    {
+                        // 只深入搜尋一層子目錄，避免搜尋過多
+                        foreach (var dir in Directory.EnumerateDirectories(baseDirectory))
+                        {
+                            var subTrunkDir = Directory.EnumerateDirectories(dir)
+                                                    .FirstOrDefault(d => Path.GetFileName(d).Equals("trunk", StringComparison.OrdinalIgnoreCase));
+                            if (subTrunkDir != null)
+                            {
+                                trunkPath = subTrunkDir;
+                                break;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogToUI?.Invoke($"搜尋子目錄時發生錯誤: {ex.Message}");
+                    }
+                }
+            }
 
             if (string.IsNullOrEmpty(trunkPath))
             {
@@ -257,19 +290,51 @@ namespace ReferenceConversion.Presentation
 
         private void ExecuteConversion(ReferenceConversionMode mode)
         {
-            if (Cbx_solution_file.SelectedItem is FileInfo selected)
+            try
             {
+
+                if (Cbx_solution_file.SelectedItem is not FileInfo selected)
+                {
+                    ShowStatus("請先選擇一個解決方案檔案。", isError: true, useMessageBox: true);
+                    return;
+                }
+
                 var slnPath = selected.FullName;
                 var dir = Path.GetDirectoryName(slnPath)!;
-                var csprojFiles = Directory.EnumerateFiles(dir, "*.csproj", SearchOption.AllDirectories);
+
+                // 顯示操作開始
+                ShowStatus($"開始轉換，模式：{(mode == ReferenceConversionMode.ProjectToDll ? "專案轉DLL參考" : "DLL轉專案參考")}", isError: false);
+                Application.DoEvents(); // 讓UI更新
+
+                var csprojFiles = Directory.EnumerateFiles(dir, "*.csproj", SearchOption.AllDirectories).ToList();
                 if (!csprojFiles.Any())
                 {
                     MessageBox.Show("資料夾中沒有找到 .csproj 檔案。", "錯誤", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
+
                 bool hasChanges = false;
+                int totalFiles = csprojFiles.Count;
+                int processedCount = 0;
+                int changedCount = 0;
+
+                // 處理每個csproj檔案
                 foreach (var file in csprojFiles)
-                    ProcessCsprojFile(file, ref hasChanges, slnPath, mode);
+                {
+                    processedCount++;
+                    ShowStatus($"正在處理 ({processedCount}/{totalFiles}): {Path.GetFileName(file)}");
+
+                    bool fileChanged = false;
+                    ProcessCsprojFile(file, ref fileChanged, slnPath, mode);
+
+                    if (fileChanged)
+                    {
+                        changedCount++;
+                        hasChanges = true;
+                    }
+
+                    Application.DoEvents(); // 讓UI能夠更新
+                }
 
                 var msg = hasChanges
                     ? (mode == ReferenceConversionMode.ProjectToDll)
@@ -278,6 +343,10 @@ namespace ReferenceConversion.Presentation
                     : "沒有檔案需要轉換。";
 
                 ShowStatus(msg, isError: !hasChanges);
+            } catch (Exception ex)
+            {
+                ShowStatus($"轉換過程發生錯誤: {ex.Message}", isError: true, useMessageBox: true);
+                Logger.LogToUI?.Invoke($"錯誤詳情: {ex}");
             }
         }
 

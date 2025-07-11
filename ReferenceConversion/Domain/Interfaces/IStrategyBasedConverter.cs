@@ -9,7 +9,7 @@ namespace ReferenceConversion.Domain.Interfaces
 {
     public interface IStrategyBasedConverter
     {
-        bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processed, string slnFilePath);
+        bool ConvertProjectReferenceToReference(XmlDocument xmlDoc, HashSet<string> processed, string slnFilePath, string csprojPath);
         bool ConvertReferenceToProjectReference(XmlDocument xmlDoc, HashSet<string> processed, string slnFilePath, string csprojPath);
     }
 }

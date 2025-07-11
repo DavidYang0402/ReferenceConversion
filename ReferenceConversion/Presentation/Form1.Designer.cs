@@ -202,7 +202,7 @@
             // 
             // Btn_ToggleLog
             // 
-            Btn_ToggleLog.Location = new Point(309, 494);
+            Btn_ToggleLog.Location = new Point(360, 490);
             Btn_ToggleLog.Name = "Btn_ToggleLog";
             Btn_ToggleLog.Size = new Size(75, 23);
             Btn_ToggleLog.TabIndex = 15;
@@ -213,7 +213,7 @@
             // Lb_Log_Status
             // 
             Lb_Log_Status.AutoSize = true;
-            Lb_Log_Status.Location = new Point(390, 498);
+            Lb_Log_Status.Location = new Point(441, 494);
             Lb_Log_Status.Name = "Lb_Log_Status";
             Lb_Log_Status.Size = new Size(59, 15);
             Lb_Log_Status.TabIndex = 16;
@@ -250,7 +250,7 @@
             // 
             // Btn_Clear_Log
             // 
-            Btn_Clear_Log.Location = new Point(309, 523);
+            Btn_Clear_Log.Location = new Point(360, 519);
             Btn_Clear_Log.Name = "Btn_Clear_Log";
             Btn_Clear_Log.Size = new Size(75, 23);
             Btn_Clear_Log.TabIndex = 18;
