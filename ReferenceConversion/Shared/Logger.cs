@@ -63,7 +63,7 @@ namespace ReferenceConversion.Shared
                         FileInfo fileInfo = new FileInfo(logPath);
                         if (fileInfo.Length >= MaxLogSizeBytes)
                         {
-                            File.Delete(logPath); // 🔥 超過上限就砍掉
+                            File.Delete(logPath);
                             Debug.WriteLine($"[Logger] Log file exceeded {MaxLogSizeBytes} bytes, deleted old file.");
                         }
                     }
