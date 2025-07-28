@@ -29,15 +29,21 @@ namespace ReferenceConversion.Applications.Services
         public bool Convert(XmlDocument xmlDoc, HashSet<string> processedReferences, string slnFilePath, string csprojPath)
         {
             bool isChanged = false;
-            var referenceNodes = xmlDoc.GetElementsByTagName("Reference").Cast<XmlNode>().ToList();
+            var referenceNodes = xmlDoc.GetElementsByTagName("Reference");
             var nodesToRemove = new List<XmlNode>();
             var slnModifier = _slnModifierFactory(slnFilePath);
 
             Logger.LogInfo($"開始處理 SLN 檔案: {slnFilePath}, 進行轉成專案參考");
 
-            foreach (XmlNode node in referenceNodes)
+            string csprojProName = Path.GetFileNameWithoutExtension(csprojPath);
+            bool isShareUserCtrl = string.Equals(csprojProName, "ShareUserCtrl", StringComparison.Ordinal);
+
+            for (int i = 0; i < referenceNodes.Count; i++)
             {
-                if (node.Attributes?["Include"] is not XmlAttribute includeAttr) continue;
+                XmlNode? node = referenceNodes[i];
+                XmlAttribute includeAttr = node.Attributes?["Include"];
+                if(includeAttr is null) continue;
+
                 string referenceName = includeAttr.Value.Split(',')[0];
                 if (string.IsNullOrEmpty(referenceName) || processedReferences.Contains(referenceName)) continue;
 
@@ -47,14 +53,18 @@ namespace ReferenceConversion.Applications.Services
                 {
                     Logger.LogInfo($"找到允許的專案: {entry.Name}, 將轉換為 DLL");
 
-                    string relativePath = Path.Combine("..", "..", "..", entry.Path);
+                    string relativePath = (!isShareUserCtrl)
+                        ? Path.Combine("..", "..", "..", entry.Path)
+                        : Path.Combine("..", "..", "..", "..", entry.Path);
 
-                    string csprojProjectName = Path.GetFileNameWithoutExtension(csprojPath);
+                    //string relativePath = Path.Combine("..", "..", "..", entry.Path);
 
-                    if (csprojProjectName == "ShareUserCtrl")
-                    {
-                        relativePath = Path.Combine("..", "..", "..", "..", entry.Path);
-                    }
+                    ////string csprojProjectName = Path.GetFileNameWithoutExtension(csprojPath);
+
+                    //if (csprojProjectName == "ShareUserCtrl")
+                    //{
+                    //    relativePath = Path.Combine("..", "..", "..", "..", entry.Path);
+                    //}
 
                     var newElement = xmlDoc.CreateElement("ProjectReference");
                     newElement.SetAttribute("Include", relativePath);

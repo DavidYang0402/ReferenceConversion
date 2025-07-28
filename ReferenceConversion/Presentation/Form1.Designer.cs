@@ -154,6 +154,7 @@
             // 
             // Btn_ToReference
             // 
+            Btn_ToReference.Cursor = Cursors.Hand;
             Btn_ToReference.Location = new Point(8, 490);
             Btn_ToReference.Name = "Btn_ToReference";
             Btn_ToReference.Size = new Size(120, 40);
@@ -164,6 +165,7 @@
             // 
             // Btn_ToProjectReference
             // 
+            Btn_ToProjectReference.Cursor = Cursors.Hand;
             Btn_ToProjectReference.Location = new Point(135, 490);
             Btn_ToProjectReference.Name = "Btn_ToProjectReference";
             Btn_ToProjectReference.Size = new Size(120, 40);
@@ -199,6 +201,7 @@
             Lb_Convert_Status.Size = new Size(55, 15);
             Lb_Convert_Status.TabIndex = 14;
             Lb_Convert_Status.Text = "轉換狀態";
+            Lb_Convert_Status.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // Btn_ToggleLog
             // 
