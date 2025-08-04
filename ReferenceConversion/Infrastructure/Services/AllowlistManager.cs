@@ -44,7 +44,7 @@ namespace ReferenceConversion.Infrastructure.Services
             }
         }
 
-        public bool IsInAllowlist(string referenceName, out Project? project, out Allowlist? entry)
+        public bool IsInAllowlist(string referenceName, out Project? project, out ReferenceItem? entry)
         {
             project = FindProject(_currentProjectName);
             if (project is not null)

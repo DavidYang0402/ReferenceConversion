@@ -25,10 +25,10 @@ namespace ReferenceConversion.Data
         public string DllPath { get; set; } = string.Empty;
 
         [JsonProperty("Allowlist")]
-        public List<Allowlist> Allowlist { get; set; } = new();
+        public List<ReferenceItem> Allowlist { get; set; } = new();
     }
 
-    public class Allowlist
+    public class ReferenceItem
     {
         [JsonProperty("name")]
         public string Name { get; set; } = string.Empty;

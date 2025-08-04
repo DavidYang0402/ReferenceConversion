@@ -11,7 +11,7 @@ namespace ReferenceConversion.Domain.Interfaces
     {
         void LoadProject();
         void DisplayAllowlistForProject(string projectName, ListBox refList);
-        bool IsInAllowlist(string referenceName, out Project? project, out Allowlist? entry);
+        bool IsInAllowlist(string referenceName, out Project? project, out ReferenceItem? entry);
         void SetCurrentProjectName(string projectName);
         IEnumerable<string> GetProjectNames();
         string? GetProjectDllPath(string projectName);
