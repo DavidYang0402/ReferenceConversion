@@ -14,7 +14,7 @@ namespace ReferenceConversion.Infrastructure.Services
     {
         public DllCopier() { }
 
-        public void Copy(string slnPath, string refName, string libsTargetDir, string refPath)
+        public void Copy(string slnPath, string refName, string libsTargetDir, string refPath, string proName)
         {
             string? slnDir = Path.GetDirectoryName(slnPath);
             if (slnDir == null)
@@ -26,9 +26,7 @@ namespace ReferenceConversion.Infrastructure.Services
             Logger.LogDebug($"專案所在目錄：{slnDir}");
 
             string firstDir = GetTopLevelDirectoryFromRelativePath(refPath);
-
             string? rootSearchDir = FindDirectoryUpwards(slnDir, firstDir);
-
 
             if (rootSearchDir == null)
             {
@@ -38,18 +36,9 @@ namespace ReferenceConversion.Infrastructure.Services
             Logger.LogInfo($"找到 {firstDir} 目錄：{rootSearchDir}");
 
             string projectSubDir = GetProjectDirectoryFromCsprojPath(refPath);
-
-            string fullDLLDir = Path.Combine(rootSearchDir, Path.GetRelativePath(firstDir, projectSubDir));
-
-            //string? refDir = Directory.EnumerateDirectories(rootSearchDir, "*", SearchOption.AllDirectories)
-            //    .FirstOrDefault(d => string.Equals(new DirectoryInfo(d).Name, refName, StringComparison.OrdinalIgnoreCase));
-
-
-            if (fullDLLDir == null)
-            {
-                Logger.LogWarning($"在 {rootSearchDir} 下找不到名為 {refName} 的資料夾，略過");
-                return;
-            }
+            string fullDLLDir = (Path.GetRelativePath(firstDir, projectSubDir) == ".")
+                ? rootSearchDir
+                : Path.Combine(rootSearchDir, Path.GetRelativePath(firstDir, projectSubDir));
 
             // 找 \bin\Debug\ 資料夾
             string? debugDir = Directory.EnumerateDirectories(fullDLLDir, "*", SearchOption.AllDirectories)
@@ -80,27 +69,21 @@ namespace ReferenceConversion.Infrastructure.Services
 
             Logger.LogInfo($"選擇最新的 {refName}.dll，路徑：{dllFile}，最後修改時間：{latestDll.LastWriteTime}");
 
-            string libsTargetDirFull;
-
+            string libsTargetDirFull = "";
             if (!string.IsNullOrEmpty(libsTargetDir))
             {
-                libsTargetDirFull = Path.GetFullPath(
-                    Path.IsPathRooted(libsTargetDir)
-                        ? libsTargetDir
-                        : Path.Combine(slnDir, libsTargetDir)
-                );
-            }
-            else
-            {
-                // 自動搜尋子目錄中有 .csproj 的資料夾，並尋找其中的 Libs
-                string? autoLibsPath = FindLibsInSiblingProject(slnDir);
+                string? autoLibsPath = FindLibsInProjectOrSiblings(slnDir, libsTargetDir, proName);
                 if (autoLibsPath == null)
                 {
-                    Logger.LogError("無法自動尋找 Libs 資料夾，請確認結構或手動指定");
+                    Logger.LogError("無法定位目標 Libs 資料夾（已依序檢查：自身、同名專案、其他專案）");
                     return;
                 }
-
                 libsTargetDirFull = autoLibsPath;
+            }
+
+            if (libsTargetDirFull == null) {
+                Logger.LogError("目標 Libs 資料夾路徑無效");
+                return;
             }
 
             try
@@ -114,7 +97,7 @@ namespace ReferenceConversion.Infrastructure.Services
                 return;
             }
 
-            string targetPath = Path.Combine(libsTargetDirFull, Path.GetFileName(dllFile));
+                string targetPath = Path.Combine(libsTargetDirFull, Path.GetFileName(dllFile));
             if (File.Exists(targetPath) &&
                 File.GetLastWriteTime(targetPath) >= File.GetLastWriteTime(dllFile))
             {
@@ -126,7 +109,7 @@ namespace ReferenceConversion.Infrastructure.Services
             {
                 Logger.LogInfo($"複製 {refName}.dll 到 {targetPath}");
                 File.Copy(dllFile, targetPath, overwrite: true);
-                File.SetLastWriteTime(targetPath, File.GetLastWriteTime(dllFile));
+                //File.SetLastWriteTime(targetPath, File.GetLastWriteTime(dllFile));
                 Logger.LogSuccess($"{refName}.dll 複製成功");
             }
             catch (Exception ex)
@@ -161,30 +144,89 @@ namespace ReferenceConversion.Infrastructure.Services
             return directoryPath;
         }
 
-
-        private string? FindLibsInSiblingProject(string slnDir)
+        private string? FindLibsInProjectOrSiblings(string slnDir, string libsSpec, string proName)
         {
+            string? targetFolder = ExtractSecondSegment(libsSpec);
+            if (string.IsNullOrWhiteSpace(targetFolder))
+                return null;
+
             try
             {
-                foreach (var subDir in Directory.GetDirectories(slnDir))
+                string? baseDir = null;
+                string mainCsproj = Path.Combine(slnDir, $"{proName}.csproj");
+                if (File.Exists(mainCsproj))
                 {
-                    // 看起來像專案的資料夾（有 .csproj）
-                    if (Directory.EnumerateFiles(subDir, "*.csproj").Any())
+                    Logger.LogDebug($"在解決方案根目錄找到 {proName}.csproj");
+                    baseDir = slnDir;
+                }
+                else
+                {
+                    Logger.LogDebug($"解決方案根目錄沒有 {proName}.csproj，開始搜尋 {proName} 目錄");
+
+                    var candidateDirs = Directory.EnumerateDirectories(slnDir, proName, SearchOption.AllDirectories)
+                        .OrderBy(p => p.Length);
+
+                    foreach (var dir in candidateDirs)
                     {
-                        var libsPath = Path.Combine(subDir, "Libs");
-                        if (Directory.Exists(libsPath))
+                        var csproj = Path.Combine(dir, $"{proName}.csproj");
+                        if (File.Exists(csproj))
                         {
-                            Logger.LogDebug($"自動偵測到 Libs 資料夾：{libsPath}");
-                            return libsPath;
+                            baseDir = dir;
+                            Logger.LogDebug($"找到符合的專案目錄：{dir} (含 {proName}.csproj)");
+                            break;
                         }
                     }
                 }
+
+                if (baseDir == null)
+                {
+                    Logger.LogWarning($"找不到符合的專案 (缺少 {proName}.csproj)");
+                    return null;
+                }
+
+                //確認 / 建立 targetFolder
+                var libsDir = Path.Combine(baseDir, targetFolder);
+                if (!Directory.Exists(libsDir))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(libsDir);
+                        Logger.LogInfo($"建立目標 Libs 目錄：{libsDir}");
+                    }
+                    catch (Exception ce)
+                    {
+                        Logger.LogError($"建立目錄失敗：{libsDir}，錯誤：{ce.Message}");
+                        return null;
+                    }
+                }
+                else
+                {
+                    Logger.LogDebug($"使用既有目錄：{libsDir}");
+                }
+
+                return libsDir;
             }
             catch (Exception ex)
             {
-                Logger.LogError($"尋找 Libs 時發生錯誤：{ex.Message}");
+                Logger.LogError($"尋找 Libs 發生例外：{ex.Message}");
             }
 
+            return null;
+        }
+
+        private static string? ExtractSecondSegment(string pathLike)
+        {
+            if (string.IsNullOrWhiteSpace(pathLike))
+                return null;
+
+            var parts = pathLike
+                .Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length >= 2)
+                return parts[1];          // 第二段
+            if (parts.Length == 1)
+                return parts[0];          // 只有一段時取第一段
             return null;
         }
 

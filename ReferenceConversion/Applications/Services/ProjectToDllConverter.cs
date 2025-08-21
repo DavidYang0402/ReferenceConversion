@@ -41,6 +41,9 @@ namespace ReferenceConversion.Applications.Services
 
             Logger.LogSeparator();
 
+            string csprojProName = Path.GetFileNameWithoutExtension(csprojPath);
+            bool isShareUserCtrl = string.Equals(csprojProName, "ShareUserCtrl", StringComparison.Ordinal);
+
             foreach (XmlNode node in referenceNodes)
             {
                 if (node.Attributes?["Include"] is not XmlAttribute includeAttr) continue;
@@ -53,17 +56,22 @@ namespace ReferenceConversion.Applications.Services
                 {
                     Logger.LogInfo($"找到允許的專案: {entry.Name}, 將轉換為 DLL");
 
+                    // 如果 csproj 與 dll 位置是同一層 就 深度等於 0
+                    //bool sameLevel = HasDllFolderInProjectDirectory(csprojPath, project.DllPath);
+                    //int effectiveDllDepth = sameLevel ? 0 : entry.DllDepth;
+
+
+                    //string relativePath = Path.Combine(
+                    //    (!isShareUserCtrl)
+                    //      ? Enumerable.Repeat("..", effectiveDllDepth).ToArray()
+                    //      : Enumerable.Repeat("..", 2).ToArray()
+                    //  ).Replace("\\", "/");
+
+                    //string dllPath = Path.Combine(relativePath, project.DllPath, $"{referenceName}.dll").Replace("\\", "/");
+
+                    string dllPath = Path.Combine($"$(SolutionDir){project.DllPath}", $"{referenceName}.dll").Replace("\\", @"\");
+
                     var newElement = xmlDoc.CreateElement("Reference");
-
-                    string dllPath = Path.Combine("..", project.DllPath, $"{referenceName}.dll");
-
-                    string csprojProjectName = Path.GetFileNameWithoutExtension(csprojPath);
-                    if (csprojProjectName == "ShareUserCtrl")
-                    {
-                        dllPath = Path.Combine("..", "..", entry.Path);
-                    }
-
-
                     newElement.SetAttribute("Include", $"{entry.Name}, Version={entry.Version}, Culture=neutral, processorArchitecture=MSIL");
 
                     var specificVersion = xmlDoc.CreateElement("SpecificVersion");
@@ -83,7 +91,7 @@ namespace ReferenceConversion.Applications.Services
 
                     // Log DLL 複製
                     Logger.LogInfo($"開始複製 DLL: {referenceName}.dll 到 {dllPath}");
-                    _dllCopier.Copy(slnFilePath, referenceName, project.DllPath, entry.Path);
+                    _dllCopier.Copy(slnFilePath, referenceName, project.DllPath, entry.Path, project.ProjectName);
 
                     Logger.LogSeparator();
                 }
@@ -95,6 +103,31 @@ namespace ReferenceConversion.Applications.Services
                 node.ParentNode?.RemoveChild(node);
 
             return isChanged;
-        }      
+        }
+
+        private static bool HasDllFolderInProjectDirectory(string csprojPath, string dllPath)
+        {
+            if (string.IsNullOrWhiteSpace(csprojPath) || string.IsNullOrWhiteSpace(dllPath))
+                return false;
+
+            string? csprojDir = Path.GetDirectoryName(csprojPath);
+            if (string.IsNullOrEmpty(csprojDir)) return false;
+
+            string trimmed = dllPath.Trim().TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (string.IsNullOrEmpty(trimmed)) return false;
+
+            // 取最後一段目錄名稱
+            string lastSegment = trimmed
+                .Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)
+                .LastOrDefault() ?? "";
+
+            if (string.IsNullOrEmpty(lastSegment)) return false;
+
+            string candidate = Path.Combine(csprojDir, lastSegment);
+            bool exists = Directory.Exists(candidate);
+
+            Logger.LogDebug($"同層檢查: csprojDir={csprojDir}, dllPath={dllPath}, lastSegment={lastSegment}, exists={exists}");
+            return exists;
+        }
     }
 }

@@ -44,5 +44,11 @@ namespace ReferenceConversion.Data
 
         [JsonProperty("parent_guid")]
         public string? ParentGuid { get; set; }
+        [JsonProperty("csprojDepth")]
+        public int CsprojDepth { get; set; }
+        [JsonProperty("slnDepth")]
+        public int SlnDepth { get; set; }
+        [JsonProperty("dllDepth")]
+        public int DllDepth { get; set; }
     }
 }

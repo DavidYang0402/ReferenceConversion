@@ -53,31 +53,29 @@ namespace ReferenceConversion.Applications.Services
                 {
                     Logger.LogInfo($"找到允許的專案: {entry.Name}, 將轉換為 DLL");
 
-                    string relativePath = (!isShareUserCtrl)
-                        ? Path.Combine("..", "..", "..", entry.Path)
-                        : Path.Combine("..", "..", "..", "..", entry.Path);
+                    string relativePath = Path.Combine(
+                        (!isShareUserCtrl)
+                          ? Enumerable.Repeat("..", entry.CsprojDepth).ToArray()
+                          : Enumerable.Repeat("..", 4).ToArray()
+                      );
 
-                    //string relativePath = Path.Combine("..", "..", "..", entry.Path);
-
-                    ////string csprojProjectName = Path.GetFileNameWithoutExtension(csprojPath);
-
-                    //if (csprojProjectName == "ShareUserCtrl")
-                    //{
-                    //    relativePath = Path.Combine("..", "..", "..", "..", entry.Path);
-                    //}
+                    relativePath = Path.Combine(relativePath, entry.Path).Replace("\\", "/");
 
                     var newElement = xmlDoc.CreateElement("ProjectReference");
                     newElement.SetAttribute("Include", relativePath);
 
                     var projectGuidElement = xmlDoc.CreateElement("Project");
-                    projectGuidElement.InnerText = project.ProjectGuid;
+                    projectGuidElement.InnerText = entry.Guid;
                     newElement.AppendChild(projectGuidElement);
 
                     var nameElement = xmlDoc.CreateElement("Name");
                     nameElement.InnerText = entry.Name;
                     newElement.AppendChild(nameElement);
 
-                    string slnRelativePath = Path.Combine("..", "..", entry.Path);
+                    string slnRelativePath = Path.Combine(Enumerable.Repeat("..", entry.SlnDepth).ToArray());
+
+                    slnRelativePath = Path.Combine(slnRelativePath, entry.Path).Replace("\\", "/");
+
                     slnModifier.AddProjectReferenceToSln(entry.Name, slnRelativePath, project.ProjectGuid, entry.Guid, entry.ParentGuid);
 
                     node.ParentNode?.AppendChild(newElement);

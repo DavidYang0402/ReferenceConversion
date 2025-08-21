@@ -8,6 +8,6 @@ namespace ReferenceConversion.Domain.Interfaces
 {
     public interface IDllCopier
     {
-        void Copy(string slnPath, string refName, string libsTargetDir, string refPath);
+        void Copy(string slnPath, string refName, string libsTargetDir, string refPath, string proName);
     }
 }
