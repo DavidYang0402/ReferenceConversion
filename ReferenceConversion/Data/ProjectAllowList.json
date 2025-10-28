@@ -171,7 +171,7 @@
         },
         {
           "name": "ShareFunc",
-          "version": "1.0.0.0",
+          "version": "4.8.0.0",
           "guid": "{47F55D99-CFB5-4F67-93A2-38BF9F3DFC06}",
           "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareFunc\\ShareFunc.csproj",
           "csprojDepth": 3,
@@ -257,6 +257,135 @@
           "path": "InformationSecurityDefense\\InformationSecurityDefense.csproj",
           "csprojDepth": 0,
           "slnDepth": 0,
+          "dllDepth": 1
+        }
+      ]
+    },
+    {
+      "projectname": "NSPOGBCE",
+      "projectguid": "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+      "dllpath": "NSPOGBCE\\App_Data\\",
+      "Allowlist": [
+        {
+          "name": "ExcelHelper.Report",
+          "version": "1.0.0.0",
+          "guid": "{FDD603B6-8B8E-4A51-BD21-4952CAC67813}",
+          "path": "SysTools\\ExcelHelper.Report\\ExcelHelper.Report.csproj",
+          "parent_guid": "{CE5A6925-ED7A-4480-841B-DCEB27F04244}",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "ExcelHelper.TemplatReport",
+          "version": "1.0.0.0",
+          "guid": "{0CFDCD97-12CE-473A-98F2-833894112B7D}",
+          "path": "SysTools\\ExcelHelper.TemplatReport\\ExcelHelper.TemplatReport\\ExcelHelper.TemplatReport.csproj",
+          "parent_guid": "{CE5A6925-ED7A-4480-841B-DCEB27F04244}",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "ShareFunc",
+          "version": "4.0.0.0",
+          "guid": "{47F55D99-CFB5-4F67-93A2-38BF9F3DFC06}",
+          "path": "SysTools\\ShareFunc\\ShareFunc\\ShareFunc\\ShareFunc.csproj",
+          "parent_guid": "{CE5A6925-ED7A-4480-841B-DCEB27F04244}",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "ShareWebCtrl",
+          "version": "1.0.0.0",
+          "guid": "{DC91CF90-0C17-4729-B2D8-405C08E9D8DB}",
+          "path": "SysTools\\ShareFunc\\ShareFunc\\ShareWebCtrl\\ShareWebCtrl.csproj",
+          "parent_guid": "{CE5A6925-ED7A-4480-841B-DCEB27F04244}",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "ShareFunc.Base",
+          "version": "1.0.0.0",
+          "guid": "{7D91DCA0-A123-404E-92B9-13B22383FCEA}",
+          "path": "SysTools\\ShareFunc\\ShareFunc\\ShareFunc.Base\\ShareFunc.Base.csproj",
+          "parent_guid": "{CE5A6925-ED7A-4480-841B-DCEB27F04244}",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "ShareFunc.DrawFunc",
+          "version": "1.0.0.0",
+          "guid": "{B86BCD8E-2FC8-4BB6-96F4-3C42089EB20F}",
+          "path": "SysTools\\ShareFunc\\ShareFunc\\ShareFunc.DrawFunc\\ShareFunc.DrawFunc.csproj",
+          "parent_guid": "{CE5A6925-ED7A-4480-841B-DCEB27F04244}",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "PDFHelper.ReportPs",
+          "version": "1.0.0.0",
+          "guid": "{366A74FE-9C36-48F3-B062-31D1B88A25C8}",
+          "path": "SysTools\\PDFHelper.ReportPs\\PDFHelper.ReportPs\\PDFHelper.ReportPs.csproj",
+          "parent_guid": "{CE5A6925-ED7A-4480-841B-DCEB27F04244}",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        }
+      ]
+    },
+    {
+      "projectname": "WDACSAM",
+      "projectguid": "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}",
+      "dllpath": "WDACSAM\\App_Data\\",
+      "Allowlist": [
+        {
+          "name": "DataTableExport",
+          "version": "1.0.0.0",
+          "guid": "{DA171D27-5DBC-44DF-B7C1-6037729BAC8F}",
+          "path": "SysTools\\DataTableExport\\DataTableExport.csproj",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "ExcelHelper.ReportNPOI",
+          "version": "4.8.0.0",
+          "guid": "{C333FEBD-8AFE-41F8-97C8-41600B33CE2A}",
+          "path": "SysTools\\ExcelHelper.ReportNPOI\\ExcelHelper.ReportNPOI.csproj",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "ShareFunc.Base",
+          "version": "1.0.0.0",
+          "guid": "{7D91DCA0-A123-404E-92B9-13B22383FCEA}",
+          "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareFunc.Base\\ShareFunc.Base.csproj",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "ShareFunc",
+          "version": "4.8.0.0",
+          "guid": "{47F55D99-CFB5-4F67-93A2-38BF9F3DFC06}",
+          "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareFunc\\ShareFunc.csproj",
+          "csprojDepth": 3,
+          "slnDepth": 2,
+          "dllDepth": 1
+        },
+        {
+          "name": "ShareFunc.Tools",
+          "version": "0.0.0.0",
+          "guid": "{8316310C-F3B5-4AE6-B014-0B5C7B0B8872}",
+          "path": "SysTools\\ShareFunc48\\ShareFunc\\ShareFunc.Tools\\ShareFunc.Tools.csproj",
+          "csprojDepth": 3,
+          "slnDepth": 2,
           "dllDepth": 1
         }
       ]

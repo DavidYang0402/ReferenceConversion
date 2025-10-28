@@ -69,6 +69,14 @@ namespace ReferenceConversion.Applications.Services
 
                     //string dllPath = Path.Combine(relativePath, project.DllPath, $"{referenceName}.dll").Replace("\\", "/");
 
+                    string relativePath = 
+                        (!isShareUserCtrl)
+                          ? $"$(SolutionDir){project.DllPath}"
+                          : Path.GetRelativePath(
+                              Path.Combine("..", ".."), 
+                              project.DllPath
+                            ).Replace(Path.DirectorySeparatorChar, '\\');
+
                     string dllPath = Path.Combine($"$(SolutionDir){project.DllPath}", $"{referenceName}.dll").Replace("\\", @"\");
 
                     var newElement = xmlDoc.CreateElement("Reference");
@@ -103,31 +111,6 @@ namespace ReferenceConversion.Applications.Services
                 node.ParentNode?.RemoveChild(node);
 
             return isChanged;
-        }
-
-        private static bool HasDllFolderInProjectDirectory(string csprojPath, string dllPath)
-        {
-            if (string.IsNullOrWhiteSpace(csprojPath) || string.IsNullOrWhiteSpace(dllPath))
-                return false;
-
-            string? csprojDir = Path.GetDirectoryName(csprojPath);
-            if (string.IsNullOrEmpty(csprojDir)) return false;
-
-            string trimmed = dllPath.Trim().TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            if (string.IsNullOrEmpty(trimmed)) return false;
-
-            // 取最後一段目錄名稱
-            string lastSegment = trimmed
-                .Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries)
-                .LastOrDefault() ?? "";
-
-            if (string.IsNullOrEmpty(lastSegment)) return false;
-
-            string candidate = Path.Combine(csprojDir, lastSegment);
-            bool exists = Directory.Exists(candidate);
-
-            Logger.LogDebug($"同層檢查: csprojDir={csprojDir}, dllPath={dllPath}, lastSegment={lastSegment}, exists={exists}");
-            return exists;
         }
     }
 }

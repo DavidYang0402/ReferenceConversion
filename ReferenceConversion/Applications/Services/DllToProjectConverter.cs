@@ -59,7 +59,7 @@ namespace ReferenceConversion.Applications.Services
                           : Enumerable.Repeat("..", 4).ToArray()
                       );
 
-                    relativePath = Path.Combine(relativePath, entry.Path).Replace("\\", "/");
+                    relativePath = Path.Combine(relativePath, entry.Path);
 
                     var newElement = xmlDoc.CreateElement("ProjectReference");
                     newElement.SetAttribute("Include", relativePath);
@@ -74,7 +74,7 @@ namespace ReferenceConversion.Applications.Services
 
                     string slnRelativePath = Path.Combine(Enumerable.Repeat("..", entry.SlnDepth).ToArray());
 
-                    slnRelativePath = Path.Combine(slnRelativePath, entry.Path).Replace("\\", "/");
+                    slnRelativePath = Path.Combine(slnRelativePath, entry.Path);
 
                     slnModifier.AddProjectReferenceToSln(entry.Name, slnRelativePath, project.ProjectGuid, entry.Guid, entry.ParentGuid);
 

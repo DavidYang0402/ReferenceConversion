@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             Btn_GetFolder = new Button();
             Tb_ShowPath = new TextBox();
             Lb_ShowAllCsproj = new ListBox();
@@ -179,9 +180,9 @@
             label1.AutoSize = true;
             label1.Location = new Point(8, 203);
             label1.Name = "label1";
-            label1.Size = new Size(79, 15);
+            label1.Size = new Size(91, 15);
             label1.TabIndex = 10;
-            label1.Text = "專案資料夾：";
+            label1.Text = "選取 .sln 檔案：";
             // 
             // Tb_Ref_Path
             // 
@@ -293,6 +294,7 @@
             Controls.Add(Btn_ToReference);
             Controls.Add(groupBox2);
             Controls.Add(groupBox1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximumSize = new Size(1380, 610);
             MinimumSize = new Size(540, 610);
             Name = "Form1";
