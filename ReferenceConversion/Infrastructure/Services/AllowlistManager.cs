@@ -30,6 +30,9 @@ namespace ReferenceConversion.Infrastructure.Services
                 ?? throw new InvalidOperationException("無法解析 Allowlist JSON 資料");
 
             _projectAllowlist = allowlistData.Projects ?? new List<Project>();
+
+            //new function
+            SortProjectsAndAllowlists();
         }
 
         public void DisplayAllowlistForProject(string projectName, ListBox refList)
@@ -38,7 +41,8 @@ namespace ReferenceConversion.Infrastructure.Services
             if (project == null) return;
 
             refList.Items.Clear();
-            foreach (var item in project.Allowlist)
+            //foreach (var item in project.Allowlist)
+            foreach (var item in OrderAllowlist(project.Allowlist))
             {
                 refList.Items.Add(item.Name);
             }
@@ -68,7 +72,11 @@ namespace ReferenceConversion.Infrastructure.Services
 
         public IEnumerable<string> GetProjectNames()
         {
-            return _projectAllowlist.Select(p => p.ProjectName).ToList();
+            //return _projectAllowlist.Select(p => p.ProjectName).ToList();
+            return _projectAllowlist
+                .OrderBy(p => p.ProjectName, StringComparer.OrdinalIgnoreCase)
+                .Select(p => p.ProjectName)
+                .ToList();
         }
 
         public string? GetProjectDllPath(string projectName)
@@ -80,6 +88,26 @@ namespace ReferenceConversion.Infrastructure.Services
         {
             return _projectAllowlist.FirstOrDefault(p =>
                 p.ProjectName.Equals(projectName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        //新 function
+
+        private void SortProjectsAndAllowlists()
+        {
+            foreach (var project in _projectAllowlist)
+            {
+                project.Allowlist = OrderAllowlist(project.Allowlist).ToList();
+            }
+
+            _projectAllowlist = _projectAllowlist
+                .OrderBy(p => p.ProjectName, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static IEnumerable<ReferenceItem> OrderAllowlist(IEnumerable<ReferenceItem> allowlist)
+        {
+            return allowlist
+                .OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase);
         }
     }
 }
